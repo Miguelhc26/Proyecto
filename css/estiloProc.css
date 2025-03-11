@@ -1,0 +1,45 @@
+/* Estilos generales */
+body {
+    font-family: 'Courier New', monospace;
+    background: radial-gradient(circle, #6a0dad, #4b0082);
+    color: #fff;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #fff;
+    text-transform: uppercase;
+    border-bottom: 4px solid #fff;
+    display: inline-block;
+}
+
+/* Contenedor principal */
+body > div {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    width: 100%;
+    max-width: 600px;
+    border: 3px solid #fff;
+    backdrop-filter: blur(10px);
+}
+
+/* Estilo de texto dinámico generado por PHP */
+body > div p {
+    font-size: 1.2rem;
+    line-height: 1.8;
+    color: #fff;
+    font-weight: bold;
+}
