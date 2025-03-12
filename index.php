@@ -93,7 +93,7 @@
             <div class="card text-center">
                 <div class="card-body">
                     <p class="card-text">"MoveSync ha cambiado la forma en que viajo. ¡Es tan fácil y conveniente!"</p>
-                    <h5 class="card-title">- Ana Pérez</h5>
+                    <h5 class="card-title">- Carlos Gonzalez</h5>
                 </div>
             </div>
         </div>
@@ -101,7 +101,7 @@
             <div class="card text-center">
                 <div class="card-body">
                     <p class="card-text">"Gracias a MoveSync, siempre llego a tiempo a mis citas. ¡Lo recomiendo!"</p>
-                    <h5 class="card-title">- Luis Gómez</h5>
+                    <h5 class="card-title">- Francisco Penin</h5>
                 </div>
             </div>
         </div>
@@ -109,7 +109,7 @@
             <div class="card text-center">
                 <div class="card-body">
                     <p class="card-text">"Me encanta poder reportar incidencias y ver que se toman en cuenta."</p>
-                    <h5 class="card-title">- María López</h5>
+                    <h5 class="card-title">- Sergio Alvarez</h5>
                 </div>
             </div>
         </div>

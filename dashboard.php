@@ -12,6 +12,9 @@ $id_usuario = $_SESSION['usuario'];
 // Obtener información del usuario
 $sql = "SELECT * FROM Usuarios WHERE id_usuario = $id_usuario";
 $result = $conn->query($sql);
+if (!$result) {
+    die("Error en la consulta del usuario: " . $conn->error);
+}
 $usuario = $result->fetch_assoc();
 
 // Obtener las rutas más populares
@@ -25,9 +28,13 @@ $sqlIncidencias = "SELECT i.*, r.Origen, r.Destino FROM Incidencias i
                   ORDER BY i.ID_Incidencia DESC LIMIT 5";
 $resultIncidencias = $conn->query($sqlIncidencias);
 
-// Obtener pagos recientes si existen
-$sqlPagos = "SELECT * FROM Pagos WHERE id_usuario = $id_usuario ORDER BY fecha_pago DESC LIMIT 3";
-$resultPagos = $conn->query($sqlPagos);
+// Obtener puntos de lealtad
+$sqlPuntos = "SELECT * FROM LoyaltyPoints WHERE id_usuario = $id_usuario";
+$resultPuntos = $conn->query($sqlPuntos);
+if (!$resultPuntos) {
+    die("Error en la consulta de puntos: " . $conn->error);
+}
+$puntos = $resultPuntos->fetch_assoc();
 ?>
 
 <?php include(__DIR__ . '/includes/header.php'); ?>
@@ -77,7 +84,8 @@ $resultPagos = $conn->query($sqlPagos);
         </div>
         <div class="col-md-3">
             <div class="card shadow-sm h-100">
-                <div class="card-body text-center <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                <div class="card-body text-center">
+                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
                     <h5 class="card-title">Reportar Incidencia</h5>
                     <p class="card-text">Informa sobre cualquier problema en las rutas</p>
                     <a href="php/report.php" class="btn btn-warning w-100">Reportar</a>
@@ -87,48 +95,50 @@ $resultPagos = $conn->query($sqlPagos);
         <div class="col-md-3">
             <div class="card shadow-sm h-100">
                 <div class="card-body text-center">
-                    <i class="fas fa-credit-card fa-3x text-success mb-3"></i>
-                    <h5 class="card-title">Realizar Pago</h5>
-                    <p class="card-text">Gestiona tus pagos de manera sencilla</p>
-                    <a href="php/pay.php" class="btn btn-success w-100">Pagar</a>
+                    <i class="fas fa-star fa -3x text-success mb-3"></i>
+                    <h5 class="card-title">Mis Puntos de Lealtad</h5>
+                    <p class="card-text">Consulta tus puntos acumulados</p>
+                    <a href="php/loyalty.php" class="btn btn-success w-100">Ver Puntos</a>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="card shadow-sm h-100">
                 <div class="card-body text-center">
-                    <i class="fas fa-sign-out-alt fa-3x text-danger mb-3"></i>
-                    <h5 class="card-title">Cerrar Sesión</h5>
-                    <p class="card-text">Sal de tu cuenta de forma segura</p>
-                    <a href="php/logout.php" class="btn btn-danger w-100">Salir</a>
+                    <i class="fas fa-cog fa-3x text-info mb-3"></i>
+                    <h5 class="card-title">Configuración</h5>
+                    <p class="card-text">Ajusta tus preferencias</p>
+                    <a href="php/settings.php" class="btn btn-info w-100">Configurar</a>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Sección de Rutas Populares -->
+    <!-- Rutas Populares -->
     <div class="row mb-4">
         <div class="col-md-12">
-            <h4 class="mb-3">Rutas Populares</h4>
-        </div>
-        <?php while ($ruta = $resultRutas->fetch_assoc()): ?>
-            <div class="col-md-4">
-                <div class="card shadow-sm mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title"><?php echo htmlspecialchars($ruta['Origen']) . " → " . htmlspecialchars($ruta['Destino']); ?></h5>
-                        <p class="card-text">Horario: <?php echo htmlspecialchars($ruta['Horario']); ?></p>
+            <h4 class="mb-3">Rutas Más Populares</h4>
+            <div class="row">
+                <?php while ($ruta = $resultRutas->fetch_assoc()): ?>
+                    <div class="col-md-4">
+                        <div class="card shadow-sm mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title"><?php echo htmlspecialchars($ruta['Nombre']); ?></h5>
+                                <p class="card-text">Origen: <?php echo htmlspecialchars($ruta['Origen']); ?></p>
+                                <p class="card-text">Destino: <?php echo htmlspecialchars($ruta['Destino']); ?></p>
+                                <a href="php/route_details.php?id=<?php echo $ruta['ID_Ruta']; ?>" class="btn btn-primary">Ver Detalles</a>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                <?php endwhile; ?>
             </div>
-        <?php endwhile; ?>
+        </div>
     </div>
 
-    <!-- Sección de Incidencias Recientes -->
+    <!-- Incidencias Recientes -->
     <div class="row mb-4">
         <div class="col-md-12">
             <h4 class="mb-3">Incidencias Recientes</h4>
-        </div>
-        <div class="col-md-12">
             <table class="table table-striped">
                 <thead>
                     <tr>
@@ -142,9 +152,9 @@ $resultPagos = $conn->query($sqlPagos);
                     <?php while ($incidencia = $resultIncidencias->fetch_assoc()): ?>
                         <tr>
                             <td><?php echo htmlspecialchars($incidencia['ID_Incidencia']); ?></td>
-                            <td><?php echo htmlspecialchars($incidencia['Origen']) . " → " . htmlspecialchars($incidencia['Destino']); ?></td>
+                            <td><?php echo htmlspecialchars($incidencia['Origen'] . ' - ' . $incidencia['Destino']); ?></td>
                             <td><?php echo htmlspecialchars($incidencia['Descripcion']); ?></td>
-                            <td><?php echo htmlspecialchars($incidencia['Estado']); ?></td>
+                            <td><?php echo htmlspecialchars($incidencia['estado']); ?></td>
                         </tr>
                     <?php endwhile; ?>
                 </tbody>
@@ -152,34 +162,13 @@ $resultPagos = $conn->query($sqlPagos);
         </div>
     </div>
 
-    <!-- Sección de Pagos Recientes -->
+    <!-- Puntos de Lealtad -->
     <div class="row mb-4">
         <div class="col-md-12">
-            <h4 class="mb-3">Pagos Recientes</h4>
-        </div>
-        <div class="col-md-12">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>ID Pago</th>
-                        <th>Monto</th>
-                        <th>Método de Pago</th>
-                        <th>Fecha</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php while ($pago = $resultPagos->fetch_assoc()): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($pago['id_pago']); ?></td>
-                            <td><?php echo htmlspecialchars($pago['monto']); ?></td>
-                            <td><?php echo htmlspecialchars($pago['metodo_pago']); ?></td>
-                            <td><?php echo htmlspecialchars($pago['fecha_pago']); ?></td>
-                        </tr>
-                    <?php endwhile; ?>
-                </tbody>
-            </table>
+            <h4 class="mb-3">Tus Puntos de Lealtad</h4>
+            <p>Total de puntos: <?php echo htmlspecialchars($puntos['total_points']); ?></p>
         </div>
     </div>
 </div>
 
-<?
+<?php include(__DIR__ . '/includes/footer.php'); ?>

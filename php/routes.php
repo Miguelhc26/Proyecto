@@ -1,68 +1,195 @@
 <?php
 session_start();
-
-include(__DIR__ . '/../config/db_config.php'); 
-
 if (!isset($_SESSION['usuario'])) {
     header("Location: altaLogin.php");
     exit();
 }
 
-$sqlCheck = "SELECT COUNT(*) AS total FROM Rutas";
-$resultCheck = $conn->query($sqlCheck);
-$rowCheck = $resultCheck->fetch_assoc();
+// Definición de rutas predeterminadas
+$rutas = [
+    [
+        'id' => 1,
+        'nombre' => 'Ruta Express Centro',
+        'origen' => 'Estación Central',
+        'destino' => 'Plaza Mayor',
+        'paradas' => ['Estación Central', 'Avenida Principal', 'Calle Comercio', 'Plaza Mayor'],
+        'tiempo_total' => '25 minutos',
+        'tiempos_parada' => ['0 min', '8 min', '15 min', '25 min'],
+        'frecuencia' => 'Cada 10 minutos',
+        'color' => '#4CAF50',
+        'icono' => 'bus'
+    ],
+    [
+        'id' => 2,
+        'nombre' => 'Ruta Circular Norte',
+        'origen' => 'Terminal Norte',
+        'destino' => 'Terminal Sur',
+        'paradas' => ['Terminal Norte', 'Hospital General', 'Parque Industrial', 'Centro Comercial', 'Universidad', 'Terminal Norte'],
+        'tiempo_total' => '45 minutos',
+        'tiempos_parada' => ['0 min', '10 min', '20 min', '30 min', '35 min', '45 min'],
+        'frecuencia' => 'Cada 15 minutos',
+        'color' => '#2196F3',
+        'icono' => 'bus-alt'
+    ],
+    [
+        'id' => 3,
+        'nombre' => 'Línea Rápida Sur',
+        'origen' => 'Estación Sur',
+        'destino' => 'Zona Residencial',
+        'paradas' => ['Estación Sur', 'Avenida del Sur', 'Centro Deportivo', 'Parque Tecnológico', 'Zona Residencial'],
+        'tiempo_total' => '35 minutos',
+        'tiempos_parada' => ['0 min', '8 min', '18 min', '25 min', '35 min'],
+        'frecuencia' => 'Cada 12 minutos',
+        'color' => '#FF5722',
+        'icono' => 'shuttle-van'
+    ],
+    [
+        'id' => 4,
+        'nombre' => 'Conexión Este-Oeste',
+        'origen' => 'Terminal Este',
+        'destino' => 'Terminal Oeste',
+        'paradas' => ['Terminal Este', 'Barrio Antiguo', 'Centro Cultural', 'Zona Financiera', 'Terminal Oeste'],
+        'tiempo_total' => '40 minutos',
+        'tiempos_parada' => ['0 min', '10 min', '20 min', '30 min', '40 min'],
+        'frecuencia' => 'Cada 20 minutos',
+        'color' => '#9C27B0',
+        'icono' => 'bus'
+    ],
+    [
+        'id' => 5,
+        'nombre' => 'Ruta Turística',
+        'origen' => 'Estación Turística',
+        'destino' => 'Mirador',
+        'paradas' => ['Estación Turística', 'Museo de Arte', 'Plaza de la Ciudad', 'Mirador'],
+        'tiempo_total' => '50 minutos',
+        'tiempos_parada' => ['0 min', '15 min', '30 min', '50 min'],
+        'frecuencia' => 'Cada 30 minutos',
+        'color' => '#FF9800',
+        'icono' => 'camera'
+    ],
+    [
+        'id' => 6, 'nombre' => 'Ruta Universitaria',
+        'origen' => 'Campus Universitario',
+        'destino' => 'Centro Estudiantil',
+        'paradas' => ['Campus Universitario', 'Biblioteca', 'Cafetería', 'Centro Estudiantil'],
+        'tiempo_total' => '20 minutos',
+        'tiempos_parada' => ['0 min', '5 min', '10 min', '20 min'],
+        'frecuencia' => 'Cada 5 minutos',
+        'color' => '#3F51B5',
+        'icono' => 'graduation-cap'
+    ],
+    [
+        'id' => 7,
+        'nombre' => 'Ruta de la Salud',
+        'origen' => 'Hospital General',
+        'destino' => 'Clínica Especializada',
+        'paradas' => ['Hospital General', 'Centro de Salud', 'Clínica Especializada'],
+        'tiempo_total' => '15 minutos',
+        'tiempos_parada' => ['0 min', '7 min', '15 min'],
+        'frecuencia' => 'Cada 8 minutos',
+        'color' => '#8BC34A',
+        'icono' => 'heartbeat'
+    ],
+    [
+        'id' => 8,
+        'nombre' => 'Ruta de Compras',
+        'origen' => 'Plaza de Compras',
+        'destino' => 'Centro Comercial',
+        'paradas' => ['Plaza de Compras', 'Supermercado', 'Centro Comercial'],
+        'tiempo_total' => '30 minutos',
+        'tiempos_parada' => ['0 min', '10 min', '30 min'],
+        'frecuencia' => 'Cada 15 minutos',
+        'color' => '#FFEB3B',
+        'icono' => 'shopping-cart'
+    ],
+    [
+        'id' => 9,
+        'nombre' => 'Ruta Nocturna',
+        'origen' => 'Estación Nocturna',
+        'destino' => 'Zona de Entretenimiento',
+        'paradas' => ['Estación Nocturna', 'Calle de los Bares', 'Zona de Entretenimiento'],
+        'tiempo_total' => '25 minutos',
+        'tiempos_parada' => ['0 min', '10 min', '25 min'],
+        'frecuencia' => 'Cada 30 minutos',
+        'color' => '#F44336',
+        'icono' => 'moon'
+    ],
+    [
+        'id' => 10,
+        'nombre' => 'Ruta Familiar',
+        'origen' => 'Parque Familiar',
+        'destino' => 'Playa',
+        'paradas' => ['Parque Familiar', 'Zona de Picnic', 'Playa'],
+        'tiempo_total' => '1 hora',
+        'tiempos_parada' => ['0 min', '20 min', '60 min'],
+        'frecuencia' => 'Cada 60 minutos',
+        'color' => '#FF4081',
+        'icono' => 'umbrella-beach'
+    ]
+];
 
-if ($rowCheck['total'] == 0) {
-    $sqlInsert = "INSERT INTO Rutas (Origen, Destino, Horario, TipoTransporte) VALUES
-        ('Centro', 'Universidad', '07:00 - 20:00', 'Autobús'),
-        ('Estación Norte', 'Plaza Mayor', '06:30 - 22:30', 'Autobús'),
-        ('Aeropuerto', 'Terminal Bus', '05:00 - 23:00', 'Autobús'),
-        ('Playa', 'Centro Histórico', '09:00 - 18:00', 'Autobús'),
-        ('Hospital Central', 'Residencial Oeste', '07:00 - 19:00', 'Autobús'),
-        ('Estación Sur', 'Parque Central', '06:00 - 21:00', 'Autobús'),
-        ('Zona Industrial', 'Centro Financiero', '05:30 - 20:30', 'Autobús'),
-        ('Universidad', 'Biblioteca Nacional', '08:00 - 22:00', 'Autobús'),
-        ('Barrio Norte', 'Estadio Nacional', '10:00 - 23:00', 'Autobús'),
-        ('Mercado Central', 'Puerto', '06:00 - 18:00', 'Autobús')";
-    $conn->query($sqlInsert);
-}
-
-$sql = "SELECT * FROM Rutas";
-$result = $conn->query($sql);
 ?>
 
-<?php include(__DIR__ . '/../includes/header.php'); ?>
-
-<div class="container mt-5">
-    <h1 class="text-center mb-4">Rutas Disponibles</h1>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Origen</th>
-                <th>Destino</th>
-                <th>Horario</th>
-                <th>Tipo de Transporte</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php if ($result && $result->num_rows > 0): ?>
-                <?php while($row = $result->fetch_assoc()): ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($row['ID_Ruta']); ?></td>
-                        <td><?php echo htmlspecialchars($row['Origen']); ?></td>
-                        <td><?php echo htmlspecialchars($row['Destino']); ?></td>
-                        <td><?php echo htmlspecialchars($row['Horario']); ?></td>
-                        <td><?php echo htmlspecialchars($row['TipoTransporte']); ?></td>
-                    </tr>
-                <?php endwhile; ?>
-            <?php else: ?>
-                <tr>
-                    <td colspan="5" class="text-center">No hay rutas disponibles.</td>
-                </tr>
-            <?php endif; ?>
-        </tbody>
-    </table>
-</div>
-
-<?php include(__DIR__ . '/../includes/footer.php'); ?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultar Rutas - TransporteApp</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background-color: #e9ecef;
+            color: #343a40;
+        }
+        .card {
+            transition: transform 0.2s;
+            border-radius: 10px;
+        }
+        .card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        .card-title {
+            font-weight: bold;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h2 class="text-center">Rutas Disponibles</h2>
+        <div class="row">
+            <?php foreach ($rutas as $ruta): ?>
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm" style="border-left: 5px solid <?php echo htmlspecialchars($ruta['color']); ?>;">
+                        <div class="card-body">
+                            <h5 class="card-title"><?php echo htmlspecialchars($ruta['nombre']); ?></h5>
+                            <p class="card-text"><strong>Origen:</strong> <?php echo htmlspecialchars($ruta['origen']); ?></p>
+                            <p class="card-text"><strong>Destino:</strong> <?php echo htmlspecialchars($ruta['destino']); ?></p>
+                            <h6>Paradas:</h6>
+                            <ul>
+                                <?php foreach ($ruta['paradas'] as $index => $parada): ?>
+                                    <li><?php echo htmlspecialchars($parada); ?> - Tiempo estimado: <?php echo htmlspecialchars($ruta['tiempos_parada'][$index]); ?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                            <p class="card-text"><strong>Tiempo total:</strong> <?php echo htmlspecialchars($ruta['tiempo_total']); ?></p>
+                            <p class="card-text"><strong>Frecuencia:</strong> <?php echo htmlspecialchars($ruta['frecuencia']); ?></p>
+                            <a href="javascript:void(0);" class="btn btn-primary" onclick="alert('Ruta seleccionada: <?php echo htmlspecialchars($ruta['nombre']); ?>');">Seleccionar Ruta</a>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+        <a href="../dashboard.php" class="btn btn-secondary">Volver al Dashboard</a>    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
