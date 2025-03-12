@@ -10,8 +10,11 @@ if (!isset($_SESSION['usuario'])) {
 $id_usuario = $_SESSION['usuario'];
 
 // Obtener información del usuario
-$sql = "SELECT * FROM Usuarios WHERE id_usuario = $id_usuario";
-$result = $conn->query($sql);
+$sql = "SELECT * FROM Usuarios WHERE id_usuario = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $id_usuario);
+$stmt->execute();
+$result = $stmt->get_result();
 if (!$result) {
     die("Error en la consulta del usuario: " . $conn->error);
 }
@@ -20,17 +23,26 @@ $usuario = $result->fetch_assoc();
 // Obtener las rutas más populares
 $sqlRutas = "SELECT * FROM Rutas ORDER BY ID_Ruta LIMIT 3";
 $resultRutas = $conn->query($sqlRutas);
+if (!$resultRutas) {
+    die("Error en la consulta de rutas: " . $conn->error);
+}
 
 // Obtener incidencias recientes
 $sqlIncidencias = "SELECT i.*, r.Origen, r.Destino FROM Incidencias i 
-                  JOIN Rutas r ON i.Ruta = r.ID_Ruta 
+                  JOIN Rutas r ON i.id_ruta = r.ID_Ruta 
                   WHERE i.estado = 'Pendiente' 
                   ORDER BY i.ID_Incidencia DESC LIMIT 5";
 $resultIncidencias = $conn->query($sqlIncidencias);
+if (!$resultIncidencias) {
+    die("Error en la consulta de incidencias: " . $conn->error);
+}
 
 // Obtener puntos de lealtad
-$sqlPuntos = "SELECT * FROM LoyaltyPoints WHERE id_usuario = $id_usuario";
-$resultPuntos = $conn->query($sqlPuntos);
+$sqlPuntos = "SELECT * FROM LoyaltyPoints WHERE id_usuario = ?";
+$stmtPuntos = $conn->prepare($sqlPuntos);
+$stmtPuntos->bind_param("i", $id_usuario);
+$stmtPuntos->execute();
+$resultPuntos = $stmtPuntos->get_result();
 if (!$resultPuntos) {
     die("Error en la consulta de puntos: " . $conn->error);
 }
@@ -68,10 +80,11 @@ $puntos = $resultPuntos->fetch_assoc();
     </div>
 
     <!-- Accesos rápidos -->
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <h4 class="mb-3">Accesos Rápidos</h4>
-        </div>
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h4 class="mb-3">Accesos Rápidos</h4>
+    </div>
+    <div class="d-flex justify-content-between">
         <div class="col-md-3">
             <div class="card shadow-sm h-100">
                 <div class="card-body text-center">
@@ -87,7 +100,7 @@ $puntos = $resultPuntos->fetch_assoc();
                 <div class="card-body text-center">
                     <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
                     <h5 class="card-title">Reportar Incidencia</h5>
-                    <p class="card-text">Informa sobre cualquier problema en las rutas</p>
+                    <p class="card-text">Informa sobre cualquier problema</p>
                     <a href="php/report.php" class="btn btn-warning w-100">Reportar</a>
                 </div>
             </div>
@@ -95,10 +108,10 @@ $puntos = $resultPuntos->fetch_assoc();
         <div class="col-md-3">
             <div class="card shadow-sm h-100">
                 <div class="card-body text-center">
-                    <i class="fas fa-star fa -3x text-success mb-3"></i>
+                    <i class="fas fa-star fa-3x text-success mb-3"></i>
                     <h5 class="card-title">Mis Puntos de Lealtad</h5>
                     <p class="card-text">Consulta tus puntos acumulados</p>
-                    <a href="php/loyalty.php" class="btn btn-success w-100">Ver Puntos</a>
+                    <a href="php/LoyaltyPoints.php" class="btn btn-success w-100">Ver Puntos</a>
                 </div>
             </div>
         </div>
@@ -113,27 +126,7 @@ $puntos = $resultPuntos->fetch_assoc();
             </div>
         </div>
     </div>
-
-    <!-- Rutas Populares -->
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <h4 class="mb-3">Rutas Más Populares</h4>
-            <div class="row">
-                <?php while ($ruta = $resultRutas->fetch_assoc()): ?>
-                    <div class="col-md-4">
-                        <div class="card shadow-sm mb-3">
-                            <div class="card-body">
-                                <h5 class="card-title"><?php echo htmlspecialchars($ruta['Nombre']); ?></h5>
-                                <p class="card-text">Origen: <?php echo htmlspecialchars($ruta['Origen']); ?></p>
-                                <p class="card-text">Destino: <?php echo htmlspecialchars($ruta['Destino']); ?></p>
-                                <a href="php/route_details.php?id=<?php echo $ruta['ID_Ruta']; ?>" class="btn btn-primary">Ver Detalles</a>
-                            </div>
-                        </div>
-                    </div>
-                <?php endwhile; ?>
-            </div>
-        </div>
-    </div>
+</div>
 
     <!-- Incidencias Recientes -->
     <div class="row mb-4">
@@ -143,8 +136,9 @@ $puntos = $resultPuntos->fetch_assoc();
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Ruta</th>
                         <th>Descripción</th>
+                        <th>Origen</th>
+                        <th>Destino</th>
                         <th>Estado</th>
                     </tr>
                 </thead>
@@ -152,8 +146,9 @@ $puntos = $resultPuntos->fetch_assoc();
                     <?php while ($incidencia = $resultIncidencias->fetch_assoc()): ?>
                         <tr>
                             <td><?php echo htmlspecialchars($incidencia['ID_Incidencia']); ?></td>
-                            <td><?php echo htmlspecialchars($incidencia['Origen'] . ' - ' . $incidencia['Destino']); ?></td>
                             <td><?php echo htmlspecialchars($incidencia['Descripcion']); ?></td>
+                            <td><?php echo htmlspecialchars($incidencia['Origen']); ?></td>
+                            <td><?php echo htmlspecialchars($incidencia['Destino']); ?></td>
                             <td><?php echo htmlspecialchars($incidencia['estado']); ?></td>
                         </tr>
                     <?php endwhile; ?>
@@ -162,11 +157,17 @@ $puntos = $resultPuntos->fetch_assoc();
         </div>
     </div>
 
-    <!-- Puntos de Lealtad -->
+    <!-- Rutas Populares -->
     <div class="row mb-4">
         <div class="col-md-12">
-            <h4 class="mb-3">Tus Puntos de Lealtad</h4>
-            <p>Total de puntos: <?php echo htmlspecialchars($puntos['total_points']); ?></p>
+            <h4 class="mb-3">Rutas Populares</h4>
+            <ul class="list-group">
+                <?php while ($ruta = $resultRutas->fetch_assoc()): ?>
+                    <li class="list-group-item">
+                        <?php echo htmlspecialchars($ruta['Nombre']); ?> - ID: <?php echo htmlspecialchars($ruta['ID_Ruta']); ?>
+                    </li>
+                <?php endwhile; ?>
+            </ul>
         </div>
     </div>
 </div>
