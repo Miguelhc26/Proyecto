@@ -189,7 +189,7 @@ $rutas = [
                 </div>
             <?php endforeach; ?>
         </div>
-        <a href="../dashboard.php" class="btn btn-secondary">Volver al Dashboard</a>    </div>
+        <a href="../dashboard.php" class="btn btn-secondary">Volver</a>    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

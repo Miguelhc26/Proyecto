@@ -47,7 +47,7 @@
 <div class="container mt-5">
     <div class="text-center mb-5">
         <h2 class="display-5 fw-bold">Simplifica tus viajes diarios</h2>
-        <p class="lea d text-muted">MoveSync ofrece todo lo que necesitas para moverte por la ciudad de manera eficiente y cómoda.</p>
+        <p class="lead text-muted">MoveSync ofrece todo lo que necesitas para moverte por la ciudad de manera eficiente y cómoda.</p>
     </div>
     <div class="row">
         <div class="col-md-4">
@@ -62,26 +62,27 @@
         </div>
         <div class="col-md-4">
             <div class="card shadow-sm mb-4">
-                <img src="assets/img/features/live-alerts.jpg" class="card-img-top" alt="Alertas en Tiempo Real">
+                <img src="assets/img/features/live-alerts.jpg" class="card-img-top" alt=" Alertas en Vivo">
                 <div class="card-body text-center">
-                    <h5 class="card-title">Alertas en Tiempo Real</h5>
-                    <p class="card-text">Mantente informado sobre retrasos, cambios de ruta o cualquier incidencia en el servicio.</p>
-                    <a href="php/alerts.php" class="btn btn-danger">Ver Alertas</a>
+                    <h5 class="card-title">Alertas en Vivo</h5>
+                    <p class="card-text">Recibe notificaciones sobre cambios en el servicio y retrasos en tiempo real.</p>
+                    <a href="php/live_alerts.php" class="btn btn-info">Ver Alertas</a>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="card shadow-sm mb-4">
-                <img src="assets/img/features/loyalty-card.jpg" class="card-img-top" alt="Programa de Fidelización">
+                <img src="assets/img/features/community-reports.jpg" class="card-img-top" alt="Reportes de la Comunidad">
                 <div class="card-body text-center">
-                    <h5 class="card-title">Programa de Fidelización</h5>
-                    <p class="card-text">Acumula puntos usando nuestro servicio y canjéalos por beneficios exclusivos.</p>
-                    <a href="php/loyalty.php" class="btn btn-success">Mis Puntos</a>
+                    <h5 class="card-title">Reportes de la Comunidad</h5>
+                    <p class="card-text">Contribuye a la mejora del servicio reportando incidencias y compartiendo experiencias.</p>
+                    <a href="php/community_reports.php" class="btn btn-info">Reportar Incidencia</a>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
 <!-- Sección de Testimonios -->
 <div class="container mt-5">
     <div class="text-center mb-5">

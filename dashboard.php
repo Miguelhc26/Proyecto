@@ -109,7 +109,7 @@ $puntos = $resultPuntos->fetch_assoc();
             <div class="card shadow-sm h-100">
                 <div class="card-body text-center">
                     <i class="fas fa-star fa-3x text-success mb-3"></i>
-                    <h5 class="card-title">Mis Puntos de Lealtad</h5>
+                    <h5 class="card-title">Mis Puntos de Fidelización</h5>
                     <p class="card-text">Consulta tus puntos acumulados</p>
                     <a href="php/LoyaltyPoints.php" class="btn btn-success w-100">Ver Puntos</a>
                 </div>
