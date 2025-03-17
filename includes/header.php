@@ -27,6 +27,7 @@ $basePath = $inPhpFolder ? '../' : '';
         .navbar {
             margin-bottom: 20px;
         }
+        
     </style>
 </head>
 <body>
@@ -34,7 +35,7 @@ $basePath = $inPhpFolder ? '../' : '';
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
             <div class="container">
                 <a class="navbar-brand" href="<?php echo $basePath; ?>index.php">
-                    <img src="<?php echo $basePath; ?>img/logo.png" alt="MoveSync Logo" height="30" class="d-inline-block align-text-top">
+                <img src="assets/logo.png" alt="Logo" style="height: 50px;">
                     MoveSync
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">

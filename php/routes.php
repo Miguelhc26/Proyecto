@@ -64,11 +64,12 @@ $rutas = [
         'tiempo_total' => '50 minutos',
         'tiempos_parada' => ['0 min', '15 min', '30 min', '50 min'],
         'frecuencia' => 'Cada 30 minutos',
-        'color' => '#FF9800',
+        'color' => '#FF9800 ',
         'icono' => 'camera'
     ],
     [
-        'id' => 6, 'nombre' => 'Ruta Universitaria',
+        'id' => 6,
+        'nombre' => 'Ruta Universitaria',
         'origen' => 'Campus Universitario',
         'destino' => 'Centro Estudiantil',
         'paradas' => ['Campus Universitario', 'Biblioteca', 'Cafetería', 'Centro Estudiantil'],
@@ -114,18 +115,6 @@ $rutas = [
         'color' => '#F44336',
         'icono' => 'moon'
     ],
-    [
-        'id' => 10,
-        'nombre' => 'Ruta Familiar',
-        'origen' => 'Parque Familiar',
-        'destino' => 'Playa',
-        'paradas' => ['Parque Familiar', 'Zona de Picnic', 'Playa'],
-        'tiempo_total' => '1 hora',
-        'tiempos_parada' => ['0 min', '20 min', '60 min'],
-        'frecuencia' => 'Cada 60 minutos',
-        'color' => '#FF4081',
-        'icono' => 'umbrella-beach'
-    ]
 ];
 
 ?>
@@ -141,12 +130,13 @@ $rutas = [
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
-            background-color: #e9ecef;
+            background-color: #f8f9fa;
             color: #343a40;
         }
         .card {
             transition: transform 0.2s;
             border-radius: 10px;
+            height: 100%;
         }
         .card:hover {
             transform: scale(1.05);
@@ -154,22 +144,32 @@ $rutas = [
         }
         .card-title {
             font-weight: bold;
+            text-align: center;
         }
         .btn-primary {
             background-color: #007bff;
             border: none;
+            width: 100%;
         }
         .btn-primary:hover {
             background-color: #0056b3;
+        }
+        .filter-input {
+            margin-bottom: 20px;
+        }
+        .row {
+            display: flex;
+            justify-content: center;
         }
     </style>
 </head>
 <body>
     <div class="container mt-4">
         <h2 class="text-center">Rutas Disponibles</h2>
-        <div class="row">
+        <input type="text" id="filter" class="form-control filter-input" placeholder="Filtrar rutas...">
+        <div class="row" id="route-list">
             <?php foreach ($rutas as $ruta): ?>
-                <div class="col-md-4 mb-4">
+                <div class="col-md-4 mb-4 route-item" data-name="<?php echo htmlspecialchars($ruta['nombre']); ?>">
                     <div class="card shadow-sm" style="border-left: 5px solid <?php echo htmlspecialchars($ruta['color']); ?>;">
                         <div class="card-body">
                             <h5 class="card-title"><?php echo htmlspecialchars($ruta['nombre']); ?></h5>
@@ -189,7 +189,18 @@ $rutas = [
                 </div>
             <?php endforeach; ?>
         </div>
-        <a href="../dashboard.php" class="btn btn-secondary">Volver</a>    </div>
+        <a href="../dashboard.php" class="btn btn-secondary">Volver</a>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('filter').addEventListener('input', function() {
+            const filterValue = this.value.toLowerCase();
+            const routeItems = document.querySelectorAll('.route-item');
+            routeItems.forEach(item => {
+                const routeName = item.getAttribute('data-name').toLowerCase();
+                item.style.display = routeName.includes(filterValue) ? '' : 'none';
+            });
+        });
+    </script>
 </body>
 </html>
