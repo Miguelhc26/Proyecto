@@ -9,11 +9,79 @@ if (!isset($_SESSION['usuario'])) {
 }
 
 $id_usuario = $_SESSION['usuario'];
+$mensaje = '';
+$status = '';
 
 // Función para manejar errores de consulta
 function handleQueryError($conn, $error) {
     error_log("Error en la base de datos: " . $error);
     return "Ha ocurrido un error al obtener los datos. Por favor, inténtelo de nuevo más tarde.";
+}
+
+// Función para añadir puntos al usuario
+function addLoyaltyPoints($conn, $userId, $points) {
+    try {
+        // Verificar si ya tiene registro de puntos
+        $sqlCheck = "SELECT * FROM LoyaltyPoints WHERE id_usuario = ?";
+        $stmtCheck = $conn->prepare($sqlCheck);
+        if (!$stmtCheck) throw new Exception($conn->error);
+        
+        $stmtCheck->bind_param("i", $userId);
+        $stmtCheck->execute();
+        $result = $stmtCheck->get_result();
+        
+        if ($result->num_rows > 0) {
+            // Actualizar puntos existentes
+            $sqlUpdate = "UPDATE LoyaltyPoints SET points = points + ? WHERE id_usuario = ?";
+            $stmtUpdate = $conn->prepare($sqlUpdate);
+            $stmtUpdate->bind_param("ii", $points, $userId);
+            return $stmtUpdate->execute();
+        } else {
+            // Crear nuevo registro de puntos
+            $sqlInsert = "INSERT INTO LoyaltyPoints (id_usuario, points) VALUES (?, ?)";
+            $stmtInsert = $conn->prepare($sqlInsert);
+            $stmtInsert->bind_param("ii", $userId, $points);
+            return $stmtInsert->execute();
+        }
+    } catch (Exception $e) {
+        error_log("Error al añadir puntos: " . $e->getMessage());
+        return false;
+    }
+}
+
+// Procesar reporte y añadir puntos si se envía el formulario
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_report'])) {
+    if (isset($_POST['descripcion']) && isset($_POST['id_ruta'])) {
+        $descripcion = $_POST['descripcion'];
+        $id_ruta = $_POST['id_ruta'];
+        
+        // Validar datos
+        if (empty($descripcion) || empty($id_ruta)) {
+            $mensaje = "Por favor, complete todos los campos requeridos.";
+            $status = "error";
+        } else {
+            // Insertar reporte en la base de datos
+            $fecha = date('Y-m-d H:i:s');
+            $estado = "Pendiente"; // Estado inicial
+            
+            $sqlInsert = "INSERT INTO Incidencias (id_usuario, id_ruta, Descripcion, fecha, estado) VALUES (?, ?, ?, ?, ?)";
+            $stmt = $conn->prepare($sqlInsert);
+            $stmt->bind_param("iisss", $id_usuario, $id_ruta, $descripcion, $fecha, $estado);
+            
+            if ($stmt->execute()) {
+                // Agregar 10 puntos de fidelización al usuario
+                if (addLoyaltyPoints($conn, $id_usuario, 10)) {
+                    $mensaje = "Reporte enviado correctamente. ¡Has ganado 10 puntos de fidelización!";
+                    $status = "success";
+                } else {
+                    $mensaje = "Reporte enviado, pero hubo un problema al asignar puntos.";
+                    $status = "warning";}
+            } else {
+                $mensaje = "Error al enviar el reporte: " . $conn->error;
+                $status = "error";
+            }
+        }
+    }
 }
 
 // Obtener información del usuario
@@ -39,9 +107,12 @@ try {
 
 // Obtener las rutas más populares
 try {
-    $sqlRutas = "SELECT * FROM Rutas ORDER BY ID_Ruta LIMIT 5";
+    $sqlRutas = "SELECT ID_Ruta, Nombre, Origen, Destino FROM Rutas ORDER BY ID_Ruta LIMIT 5";
     $resultRutas = $conn->query($sqlRutas);
-    if (!$resultRutas) throw new Exception($conn->error);
+    
+    if (!$resultRutas) {
+        throw new Exception($conn->error);
+    }
 } catch (Exception $e) {
     $error_message = handleQueryError($conn, $e->getMessage());
     $resultRutas = false;
@@ -80,11 +151,7 @@ try {
 $puntosActuales = isset($puntos['points']) ? $puntos['points'] : 0;
 $nivel = floor($puntosActuales / 100) + 1; // Nivel basado en puntos (cada 100 puntos = 1 nivel)
 $porcentajeNivel = ($puntosActuales % 100); // Porcentaje para el siguiente nivel
-
-// Obtener tiempo para siguiente nivel
 $puntosParaSiguienteNivel = 100 - $porcentajeNivel;
-
-// Obtener la fecha de última conexión
 $ultima_conexion = date('d/m/Y H:i');
 ?>
 
@@ -115,7 +182,6 @@ $ultima_conexion = date('d/m/Y H:i');
             padding: 20px;
         }
         
-        /* Tarjetas y elementos */
         .card {
             transition: transform 0.3s, box-shadow 0.3s;
             border-radius: 10px;
@@ -126,7 +192,7 @@ $ultima_conexion = date('d/m/Y H:i');
         
         .card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2 );
         }
 
         .table th, .table td {
@@ -162,7 +228,6 @@ $ultima_conexion = date('d/m/Y H:i');
             margin: 10px;
         }
 
-        /* Estilos del footer */
         footer {
             background-color: #343a40;
             color: white;
@@ -188,7 +253,6 @@ $ultima_conexion = date('d/m/Y H:i');
 <?php include(__DIR__ . '/includes/header.php'); ?>
 
 <div class="container content-wrapper">
-    <!-- Encabezado con información del usuario -->
     <div class="row mb-4">
         <div class="col-md-12">
             <div class="card shadow-sm border-0">
@@ -212,7 +276,6 @@ $ultima_conexion = date('d/m/Y H:i');
         </div>
     </div>
 
-    <!-- Estadísticas de Puntos -->
     <div class="row mb-4">
         <div class="col-md-12">
             <h4 class="mb-3">Estadísticas de Puntos</h4>
@@ -229,7 +292,6 @@ $ultima_conexion = date('d/m/Y H:i');
         </div>
     </div>
 
-    <!-- Accesos rápidos -->
     <div class="row mb-4">
         <div class="col-md-12">
             <h4 class="mb-3">Accesos Rápidos</h4>
@@ -256,7 +318,7 @@ $ultima_conexion = date('d/m/Y H:i');
                 </div>
             </div>
             <div class="access-card">
-                <div class="card shadow-sm h-100">
+ <div class="card shadow-sm h-100">
                     <div class="card-body text-center">
                         <i class="fas fa-star fa-3x text-success mb-3"></i>
                         <h5 class="card-title">Mis Puntos de Fidelización</h5>
@@ -278,7 +340,6 @@ $ultima_conexion = date('d/m/Y H:i');
         </div>
     </div>
 
-    <!-- Incidencias Recientes -->
     <div class="row mb-4">
         <div class="col-md-12">
             <h4 class="mb-3">Incidencias Recientes</h4>
@@ -313,34 +374,55 @@ $ultima_conexion = date('d/m/Y H:i');
         </div>
     </div>
 
-    <!-- Rutas Populares -->
     <div class="row mb-4">
-    <div class="col-md-12">
-        <h4 class="mb-3">Rutas Populares</h4>
-        <ul class="list-group">
-            <?php if ($resultRutas): ?>
-                <?php while ($ruta = $resultRutas->fetch_assoc()): ?>
-                    <li class="list-group-item">
-                        <?php echo htmlspecialchars($ruta['Nombre'] ?? 'Ruta sin nombre'); ?> - ID: <?php echo htmlspecialchars($ruta['ID_Ruta'] ?? 'No definido'); ?>
-                    </li>
-                <?php endwhile; ?>
-            <?php else: ?>
-                <li class="list-group-item">No hay rutas populares disponibles.</li>
-            <?php endif; ?>
-        </ul>
+        <div class="col-md-12">
+            <h4 class="mb-3">Rutas habituales</h4>
+            <div class="card shadow-sm">
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Origen</th>
+                                <th>Destino</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if ($resultRutas && $resultRutas->num_rows > 0): ?>
+                                <?php while ($ruta = $resultRutas->fetch_assoc()): ?>
+                                    <tr>
+                                        <td>
+                                            <strong><?php echo htmlspecialchars($ruta['Nombre'] ?? 'Ruta sin nombre'); ?></strong>
+                                        </td>
+                                        <td><?php echo htmlspecialchars($ruta['Origen'] ?? '-'); ?></td>
+                                        <td><?php echo htmlspecialchars($ruta['Destino'] ?? '-'); ?></td>
+                                    </tr>
+                                <?php endwhile; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="3" class="text-center py-3">
+                                        <i class="fas fa-info-circle text-info me-2"></i>
+                                        No hay rutas disponibles en este momento.
+                                    </td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
 </div>
 
 <footer class="footer">
-        <div class="container text-center">
-            <h5>Contáctanos</h5>
-            <p><a href="mailto:info@movesync.com">info@movesync.com</a></p>
-            <div class="footer-bottom">
-                <span class="text-muted">© 2025 MoveSync. Todos los derechos reservados.</span>
-            </div>
+    <div class="container text-center">
+        <h5>Contáctanos</h5>
+        <p><a href="mailto:info@movesync.com">info@movesync.com</a></p>
+        <div class="footer-bottom">
+            <span class="text-muted">© 2025 MoveSync. Todos los derechos reservados.</span>
         </div>
-    </footer>
+    </div>
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

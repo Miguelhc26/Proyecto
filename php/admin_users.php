@@ -51,11 +51,8 @@ while ($row = $resultEstadisticas->fetch_assoc()) {
                     <h2 class="m-0"><i class="fas fa-users me-2"></i>Gestión de Usuarios</h2>
                     <div>
                         <a href="admin_dashboard.php" class="btn btn-outline-secondary me-2">
-                            <i class="fas fa-arrow-left me-2"></i>Volver al Dashboard
-                        </a>
-                        <a href="admin_add_user.php" class="btn btn-primary">
-                            <i class="fas fa-user-plus me-2"></i>Agregar Nuevo Usuario
-                        </a>
+                            <i class="fas fa-arrow-left me-2"></i>Volver
+                        </a> 
                     </div>
                 </div>
             </div>

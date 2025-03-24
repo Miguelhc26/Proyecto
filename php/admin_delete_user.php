@@ -16,9 +16,26 @@ if (!isset($_GET['id'])) {
 
 $id_usuario = $_GET['id'];
 
-// Eliminar el usuario de la base de datos
-$sqlDelete = "DELETE FROM Usuarios WHERE id_usuario=$id_usuario";
-if ($conn->query($sqlDelete) === TRUE) {
+// Eliminar los puntos de lealtad del usuario
+$sqlDeletePoints = "DELETE FROM LoyaltyPoints WHERE id_usuario = ?";
+$stmtDeletePoints = $conn->prepare($sqlDeletePoints);
+if (!$stmtDeletePoints) {
+    echo "Error al preparar la consulta de eliminación de puntos: " . $conn->error;
+    exit();
+}
+$stmtDeletePoints->bind_param("i", $id_usuario);
+$stmtDeletePoints->execute();
+
+// Ahora eliminar el usuario de la base de datos
+$sqlDelete = "DELETE FROM Usuarios WHERE id_usuario = ?";
+$stmtDelete = $conn->prepare($sqlDelete);
+if (!$stmtDelete) {
+    echo "Error al preparar la consulta de eliminación de usuario: " . $conn->error;
+    exit();
+}
+$stmtDelete->bind_param("i", $id_usuario);
+
+if ($stmtDelete->execute()) {
     echo "<script>alert('Usuario eliminado exitosamente'); window.location.href='admin_users.php';</script>";
     exit();
 } else {

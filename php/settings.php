@@ -99,7 +99,8 @@ if (isset($_POST['cambiar_password'])) {
                 $password_error = "Error en la consulta: " . $conn->error;
             }
         } else {
-            $password_error = "Las nuevas contraseñas no coinciden."; }
+            $password_error = "Las nuevas contraseñas no coinciden.";
+        }
     } else {
         $password_error = "La contraseña actual es incorrecta.";
     }
@@ -175,8 +176,8 @@ if (isset($_POST['actualizar_notificaciones'])) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #f0f4f8;
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
             margin: 0;
             padding: 20px;
         }
@@ -187,20 +188,20 @@ if (isset($_POST['actualizar_notificaciones'])) {
         }
         form {
             background: #ffffff;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
         }
         input[type="text"],
         input[type="email"],
         input[type="tel"],
         input[type="password"] {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
+            width: calc(100% - 20px);
+            padding: 8px;
+            margin: 8px 0;
             border: 1px solid #ced4da;
-            border-radius: 5px;
+            border-radius: 4px;
             transition: border-color 0.3s;
         }
         input[type="text"]:focus,
@@ -213,9 +214,9 @@ if (isset($_POST['actualizar_notificaciones'])) {
         button {
             background-color: #007bff;
             color: white;
-            padding: 12px;
+            padding: 8px;
             border: none;
-            border-radius: 5px;
+            border-radius: 4px;
             cursor: pointer;
             width: 100%;
             transition: background-color 0.3s;
@@ -228,12 +229,11 @@ if (isset($_POST['actualizar_notificaciones'])) {
             text-align: center;
         }
         .success {
-            color : green;
-            text-align: center;
-        }
+            color: green;
+            text-align: center }
         .notification-label {
             display: block;
-            margin: 10px 0;
+            margin: 8px 0;
             font-weight: bold;
         }
         .back-button {
@@ -242,50 +242,78 @@ if (isset($_POST['actualizar_notificaciones'])) {
             margin-top: 20px;
             background-color: #6c757d;
             color: white;
-            padding: 10px;
-            border-radius: 5px;
+            padding: 8px;
+            border-radius: 4px;
             text-decoration: none;
             transition: background-color 0.3s;
         }
         .back-button:hover {
             background-color: #5a6268;
         }
+        .form-section {
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        .form-title {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        label {
+            margin: 5px 0;
+            display: block;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <h1>Configuración de Usuario</h1>
     
-    <form method="post">
-        <h2><i class="fas fa-lock"></i> Cambiar Contraseña</h2>
-        <input type="password" name="password_actual" placeholder="Contraseña Actual" required>
-        <input type="password" name="password_nueva" placeholder="Nueva Contraseña" required>
-        <input type="password" name="password_confirmar" placeholder="Confirmar Nueva Contraseña" required>
-        <button type="submit" name="cambiar_password">Cambiar Contraseña</button>
-        <p class="error"><?php echo $password_error; ?></p>
-        <p class="success"><?php echo $password_success; ?></p>
-    </form>
+    <div class="form-section">
+        <form method="post">
+            <div class="form-title"><i class="fas fa-lock"></i> Cambiar Contraseña</div>
+            <label for="password_actual">Contraseña Actual</label>
+            <input type="password" name="password_actual" id="password_actual" required>
+            <label for="password_nueva">Nueva Contraseña</label>
+            <input type="password" name="password_nueva" id="password_nueva" required>
+            <label for="password_confirmar">Confirmar Nueva Contraseña</label>
+            <input type="password" name="password_confirmar" id="password_confirmar" required>
+            <button type="submit" name="cambiar_password">Cambiar Contraseña</button>
+            <p class="error"><?php echo $password_error; ?></p>
+            <p class="success"><?php echo $password_success; ?></p>
+        </form>
+    </div>
 
-    <form method="post">
-        <h2><i class="fas fa-user"></i> Actualizar Perfil</h2>
-        <input type="text" name="nombre" value="<?php echo htmlspecialchars($usuario['nombre']); ?>" required>
-        <input type="email" name="email" value="<?php echo htmlspecialchars($usuario['email']); ?>" required>
-        <input type="tel" name="telefono" value="<?php echo htmlspecialchars($usuario['telefono']); ?>" required>
-        <button type="submit" name="actualizar_perfil">Actualizar Perfil</button>
-        <p class="error"><?php echo $profile_error; ?></p>
-        <p class="success"><?php echo $profile_success; ?></p>
-    </form>
+    <div class="form-section">
+        <form method="post">
+            <div class="form-title"><i class="fas fa-user"></i> Actualizar Perfil</div>
+            <label for="nombre">Nombre</label>
+            <input type="text" name="nombre" id="nombre" value="<?php echo htmlspecialchars($usuario['nombre']); ?>" required>
+            <label for="email">Email</label>
+            <input type="email" name="email" id="email" value="<?php echo htmlspecialchars($usuario['email']); ?>" required>
+            <label for="telefono">Teléfono</label>
+            <input type="tel" name="telefono" id="telefono" value="<?php echo htmlspecialchars($usuario['telefono']); ?>" required>
+            <button type="submit" name="actualizar_perfil">Actualizar Perfil</button>
+            <p class="error"><?php echo $profile_error; ?></p>
+            <p class="success"><?php echo $profile_success; ?></p>
+        </form>
+    </div>
 
-    <form method="post">
-        <h2><i class="fas fa-bell"></i> Preferencias de Notificación</h2>
-        <label class="notification-label">
-            <input type="checkbox" name="notificaciones_email" <?php echo $notificaciones_email ? 'checked' : ''; ?>> Recibir notificaciones por email
-        </label>
-        <label class="notification-label">
-            <input type="checkbox" name="notificaciones_app" <?php echo $notificaciones_app ? 'checked' : ''; ?>> Recibir notificaciones en la app
-        </label>
-        <button type="submit" name="actualizar_notificaciones">Actualizar Preferencias</button>
-        <p class="success"><?php echo $notification_success; ?></p>
-    </form>
+    <div class="form-section">
+        <form method="post">
+            <div class="form-title"><i class="fas fa-bell"></i> Preferencias de Notificación</div>
+            <label class="notification-label">
+                <input type="checkbox" name="notificaciones_email" <?php echo $notificaciones_email ? 'checked' : ''; ?>> Recibir notificaciones por email
+            </label>
+            <label class="notification-label">
+                <input type="checkbox" name="notificaciones_app" <?php echo $notificaciones_app ? 'checked' : ''; ?>> Recibir notificaciones en la app
+            </label>
+            <button type="submit" name="actualizar_notificaciones">Actualizar Preferencias</button>
+            <p class="success"><?php echo $notification_success; ?></p>
+            <p class="error"><?php echo $notification_error; ?></p>
+        </form>
+    </div>
 
     <a href="../dashboard.php" class="back-button">Volver</a>
 </body>
