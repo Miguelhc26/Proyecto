@@ -831,7 +831,7 @@ function processNotificationPreferences($conn, $id_usuario, $data) {
 
         <div class="footer">
             <a href="../dashboard.php" class="back-link">
-                <i class="fas fa-arrow-left"></i> Volver al panel principal
+                <i class="fas fa-arrow-left"></i> Volver
             </a>
         </div>
     </div>

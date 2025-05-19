@@ -793,9 +793,6 @@ $mensaje = $mensaje ?? '';
                             <td>Cada 10 minutos</td>
                             <td>
                                 <div class="btn-group">
-                                    <a href="php/route_details.php?id=1" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-info-circle"></i>
-                                    </a>
                                     <a href="php/report.php?id=1" class="btn btn-sm btn-outline-warning">
                                         <i class="fas fa-flag"></i>
                                     </a>
@@ -814,9 +811,6 @@ $mensaje = $mensaje ?? '';
                             <td>Cada 15 minutos</td>
                             <td>
                                 <div class="btn-group">
-                                    <a href="php/route_details.php?id=2" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-info-circle"></i>
-                                    </a>
                                     <a href="php/report.php?id=2" class="btn btn-sm btn-outline-warning">
                                         <i class="fas fa-flag"></i>
                                     </a>
@@ -835,9 +829,6 @@ $mensaje = $mensaje ?? '';
                             <td>Cada 12 minutos</td>
                             <td>
                                 <div class="btn-group">
-                                    <a href="php/route_details.php?id=3" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-info-circle"></i>
-                                    </a>
                                     <a href="php/report.php?id=3" class="btn btn-sm btn-outline-warning">
                                         <i class="fas fa-flag"></i>
                                     </a>
@@ -856,9 +847,6 @@ $mensaje = $mensaje ?? '';
                             <td>Cada 5 minutos</td>
                             <td>
                                 <div class="btn-group">
-                                    <a href="php/route_details.php?id=6" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-info-circle"></i>
-                                    </a>
                                     <a href="php/report.php?id=6" class="btn btn-sm btn-outline-warning">
                                         <i class="fas fa-flag"></i>
                                     </a>
@@ -877,9 +865,6 @@ $mensaje = $mensaje ?? '';
                             <td>Cada 30 minutos</td>
                             <td>
                                 <div class="btn-group">
-                                    <a href="php/route_details.php?id=9" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-info-circle"></i>
-                                    </a>
                                     <a href="php/report.php?id=9" class="btn btn-sm btn-outline-warning">
                                         <i class="fas fa-flag"></i>
                                     </a>
