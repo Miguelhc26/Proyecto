@@ -986,7 +986,7 @@
                 </div>
                 <div class="row align-items-center">
                     <div class="col-lg-6 mb-4 mb-lg-0">
-                        <img src="assets/app-features.jpg" alt="MoveSync Features" class="img-fluid rounded-3 shadow">
+                        <img src="assets/frecuente.jpg" alt="MoveSync Features" class="img-fluid rounded-3 shadow">
                     </div>
                     <div class="col-lg-6">
                         <div class="row g-4">
@@ -1115,8 +1115,8 @@
                 <div class="col-lg-4 col-md-6">
                     <h5>Contacto</h5>
                     <div class="footer-contact">
-                        <p><i class="fas fa-map-marker-alt"></i> Av. Innovación, 123, Madrid</p>
-                        <p><i class="fas fa-phone"></i> +34 91 123 45 67</p>
+                        <p><i class="fas fa-map-marker-alt"></i> Calle Rio Cares , Pola de Laviana</p>
+                        <p><i class="fas fa-phone"></i> +34 644 01 59 22</p>
                         <p><i class="fas fa-envelope"></i> <a href="mailto:info@movesync.com">info@movesync.com</a></p>
                         <p><i class="fas fa-clock"></i> Lun - Vie: 9:00 - 18:00</p>
                     </div>
