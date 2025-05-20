@@ -672,7 +672,6 @@ $ultima_conexion = date('d-m-Y H:i:s');
                                 <tr>
                                     <th>RUTA</th>
                                     <th>INCIDENCIAS</th>
-                                    <th>ACCIONES</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -686,11 +685,6 @@ $ultima_conexion = date('d-m-Y H:i:s');
                                                 </div>
                                             </td>
                                             <td><?php echo $ruta['total_incidencias']; ?></td>
-                                            <td>
-                                                <a href="admin_route_detail.php?id=<?php echo $ruta['ID_Ruta'] ?? ''; ?>" class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-eye"></i> Ver
-                                                </a>
-                                            </td>
                                         </tr>
                                     <?php endwhile; ?>
                                 <?php else: ?>

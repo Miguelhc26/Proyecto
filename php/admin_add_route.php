@@ -19,10 +19,14 @@ $success_message = "";
 $error_message = "";
 $form_data = [
     'nombre' => '',
-    'correo' => '',
-    'password' => '',
-    'password_confirm' => '',
-    'tipo' => 'Usuario'
+    'descripcion' => '',
+    'tipo' => 'Autobús',
+    'origen' => '',
+    'destino' => '',
+    'horario_inicio' => '06:00',
+    'horario_fin' => '22:00',
+    'frecuencia' => '30',
+    'estado' => 'Activa'
 ];
 
 // Procesar el formulario cuando se envía
@@ -30,10 +34,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Obtener y validar datos del formulario
     $form_data = [
         'nombre' => trim($_POST['nombre'] ?? ''),
-        'correo' => trim($_POST['correo'] ?? ''),
-        'password' => $_POST['password'] ?? '',
-        'password_confirm' => $_POST['password_confirm'] ?? '',
-        'tipo' => $_POST['tipo'] ?? 'Usuario'
+        'tipo' => 'Autobús', // Tipo fijo: Autobús
+        'origen' => trim($_POST['origen'] ?? ''),
+        'destino' => trim($_POST['destino'] ?? ''),
+        'horario' => sprintf('%s - %s (cada %s min)', 
+            $_POST['horario_inicio'] ?? '06:00', 
+            $_POST['horario_fin'] ?? '22:00',
+            $_POST['frecuencia'] ?? '30'),
+        'descripcion' => trim($_POST['descripcion'] ?? '')
     ];
     
     // Validaciones
@@ -41,88 +49,105 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Validar nombre
     if (empty($form_data['nombre'])) {
-        $errors[] = "El nombre es obligatorio";
-    } elseif (strlen($form_data['nombre']) < 3) {
-        $errors[] = "El nombre debe tener al menos 3 caracteres";
-    }
-
-    // Validar correo
-    if (empty($form_data['correo'])) {
-        $errors[] = "El correo electrónico es obligatorio";
-    } elseif (!filter_var($form_data['correo'], FILTER_VALIDATE_EMAIL)) {
-        $errors[] = "El formato del correo electrónico no es válido";
+        $errors[] = "El nombre de la ruta es obligatorio";
+    } elseif (strlen($form_data['nombre']) < 2) {
+        $errors[] = "El nombre de la ruta debe tener al menos 2 caracteres";
     } else {
-        // Verificar que el correo no existe ya en la base de datos
-        $check_email_sql = "SELECT correo FROM Usuarios WHERE correo = ?";
-        $check_email = $conn->prepare($check_email_sql);
+        // Verificar que el nombre de ruta no existe ya en la base de datos
+        $check_name_sql = "SELECT nombre FROM Rutas WHERE nombre = ?";
+        $check_name = $conn->prepare($check_name_sql);
         
-        if ($check_email === false) {
+        if ($check_name === false) {
             $errors[] = "Error en la preparación de la consulta: " . $conn->error;
         } else {
-            $check_email->bind_param("s", $form_data['correo']);
-            $check_email->execute();
-            $result = $check_email->get_result();
+            $check_name->bind_param("s", $form_data['nombre']);
+            $check_name->execute();
+            $result = $check_name->get_result();
             
             if ($result->num_rows > 0) {
-                $errors[] = "Este correo electrónico ya está registrado";
+                $errors[] = "Este nombre de ruta ya está registrado";
             }
             
-            $check_email->close();
+            $check_name->close();
         }
     }
 
-    // Validar contraseña
-    if (empty($form_data['password'])) {
-        $errors[] = "La contraseña es obligatoria";
-    } elseif (strlen($form_data['password']) < 6) {
-        $errors[] = "La contraseña debe tener al menos 6 caracteres";
-    } elseif ($form_data['password'] !== $form_data['password_confirm']) {
-        $errors[] = "Las contraseñas no coinciden";
+    // Validar origen y destino
+    if (empty($form_data['origen'])) {
+        $errors[] = "El origen es obligatorio";
+    }
+    
+    if (empty($form_data['destino'])) {
+        $errors[] = "El destino es obligatorio";
+    }
+    
+    // Validar que origen y destino sean diferentes
+    if ($form_data['origen'] === $form_data['destino'] && !empty($form_data['origen'])) {
+        $errors[] = "El origen y el destino no pueden ser iguales";
     }
 
-    // Validar tipo de usuario
-    $tipos_validos = ['Administrador', 'Usuario', 'Soporte'];
-    if (!in_array($form_data['tipo'], $tipos_validos)) {
-        $errors[] = "El tipo de usuario seleccionado no es válido";
+    // Validar tipo de transporte (solo autobús es válido)
+    if ($form_data['tipo'] !== 'Autobús') {
+        $errors[] = "El tipo de transporte debe ser Autobús";
+        $form_data['tipo'] = 'Autobús'; // Corregir automáticamente
+    }
+
+    // Validar horarios y formar cadena de horario
+    if (!preg_match('/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/', $_POST['horario_inicio'])) {
+        $errors[] = "El formato del horario de inicio no es válido (HH:MM)";
+    }
+    
+    if (!preg_match('/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/', $_POST['horario_fin'])) {
+        $errors[] = "El formato del horario de fin no es válido (HH:MM)";
+    }
+    
+    // Validar frecuencia
+    if (!is_numeric($_POST['frecuencia']) || $_POST['frecuencia'] < 1 || $_POST['frecuencia'] > 180) {
+        $errors[] = "La frecuencia debe ser un número entre 1 y 180 minutos";
     }
 
     // Si no hay errores, proceder con la inserción
     if (empty($errors)) {
         try {
-            // Hash de la contraseña
-            $hashed_password = password_hash($form_data['password'], PASSWORD_DEFAULT);
-            
-            // Nombre de la columna de contraseña en la base de datos
-            $password_column = 'contrasena';
+            // Fecha de creación
+            $fecha_creacion = date('Y-m-d H:i:s');
             
             // Preparar la consulta
-            $insert_sql = "INSERT INTO Usuarios (nombre, correo, $password_column, tipo) VALUES (?, ?, ?, ?)";
+            $insert_sql = "INSERT INTO Rutas (Nombre, Origen, Destino, Horario, Descripcion) 
+                          VALUES (?, ?, ?, ?, ?)";
             $stmt = $conn->prepare($insert_sql);
             
             if ($stmt === false) {
                 throw new Exception("Error en la preparación de la consulta: " . $conn->error);
             }
             
-            $stmt->bind_param("ssss", $form_data['nombre'], $form_data['correo'], $hashed_password, $form_data['tipo']);
+            $stmt->bind_param("sssss", 
+                $form_data['nombre'], 
+                $form_data['origen'], 
+                $form_data['destino'], 
+                $form_data['horario'],
+                $form_data['descripcion']
+            );
             
             // Ejecutar la consulta
             if ($stmt->execute()) {
-                $success_message = "Usuario creado correctamente con ID: " . $conn->insert_id;
+                $success_message = "Ruta creada correctamente con ";
                 // Limpiar formulario después de inserción exitosa
                 $form_data = [
                     'nombre' => '',
-                    'correo' => '',
-                    'password' => '',
-                    'password_confirm' => '',
-                    'tipo' => 'Usuario'
+                    'tipo' => 'Autobús',
+                    'origen' => '',
+                    'destino' => '',
+                    'horario' => '06:00 - 22:00 (cada 30 min)',
+                    'descripcion' => ''
                 ];
             } else {
-                $error_message = "Error al crear el usuario: " . $stmt->error;
+                $error_message = "Error al crear la ruta: " . $stmt->error;
             }
             
             $stmt->close();
         } catch (Exception $e) {
-            $error_message = "Error al crear el usuario: " . $e->getMessage();
+            $error_message = "Error al crear la ruta: " . $e->getMessage();
         }
     } else {
         $error_message = implode("<br>", $errors);
@@ -137,7 +162,7 @@ $fecha_actual = date('d-m-Y');
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Añadir Usuario - MoveSync</title> 
+    <title>Añadir Ruta - MoveSync</title> 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
@@ -326,7 +351,7 @@ $fecha_actual = date('d-m-Y');
             color: white;
         }
 
-        /* Específico para añadir usuario */
+        /* Específico para añadir ruta */
         .page-header {
             background: linear-gradient(135deg, #3a7bd5, #00d2ff);
             color: white;
@@ -350,25 +375,28 @@ $fecha_actual = date('d-m-Y');
             pointer-events: none;
         }
 
-        .user-role-card {
+        .transport-type-card {
             cursor: pointer;
             border: 2px solid transparent;
             transition: all 0.3s;
             opacity: 0.7;
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
         }
 
-        .user-role-card.active {
+        .transport-type-card.active {
             border-color: var(--primary-color);
             box-shadow: 0 0 15px rgba(58, 123, 213, 0.3);
             opacity: 1;
             transform: translateY(-5px);
         }
 
-        .user-role-card:hover:not(.active) {
+        .transport-type-card:hover:not(.active) {
             opacity: 0.9;
         }
 
-        .user-role-icon {
+        .transport-icon {
             width: 60px;
             height: 60px;
             border-radius: 50%;
@@ -380,16 +408,33 @@ $fecha_actual = date('d-m-Y');
             color: white;
         }
 
-        .role-admin {
+        .type-bus {
             background-color: var(--primary-color);
         }
 
-        .role-user {
-            background-color: var(--secondary-color);
+        /* Estado card */
+        .status-indicator {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
         }
 
-        .role-support {
+        .status-active {
+            background-color: var(--success-color);
+        }
+
+        .status-inactive {
+            background-color: var(--danger-color);
+        }
+
+        .status-construction {
             background-color: var(--warning-color);
+        }
+
+        .status-maintenance {
+            background-color: var(--info-color);
         }
 
         /* Alerts personalizados */
@@ -482,37 +527,6 @@ $fecha_actual = date('d-m-Y');
             background-color: var(--accent-color);
             transform: translateY(-3px);
         }
-
-        /* Password strength meter */
-        .password-strength-meter {
-            height: 6px;
-            background-color: var(--gray-200);
-            border-radius: 3px;
-            margin-top: 5px;
-            margin-bottom: 10px;
-            overflow: hidden;
-        }
-        
-        .password-strength-meter-fill {
-            height: 100%;
-            border-radius: 3px;
-            transition: width 0.3s, background-color 0.3s;
-        }
-        
-        .strength-weak {
-            background-color: var(--danger-color);
-            width: 33.33%;
-        }
-        
-        .strength-medium {
-            background-color: var(--warning-color);
-            width: 66.66%;
-        }
-        
-        .strength-strong {
-            background-color: var(--success-color);
-            width: 100%;
-        }
     </style>
 </head>
 <body>
@@ -532,7 +546,10 @@ $fecha_actual = date('d-m-Y');
                     <a class="nav-link" href="admin_dashboard.php"><i class="fas fa-tachometer-alt"></i> Panel</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" href="admin_users.php"><i class="fas fa-users"></i> Usuarios</a>
+                    <a class="nav-link" href="admin_users.php"><i class="fas fa-users"></i> Usuarios</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="admin_rutas.php"><i class="fas fa-route"></i> Rutas</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="admin_reportes.php"><i class="fas fa-flag"></i> Incidencias</a>
@@ -553,11 +570,11 @@ $fecha_actual = date('d-m-Y');
     <div class="page-header">
         <div class="row align-items-center">
             <div class="col-md-8">
-                <h2><i class="fas fa-user-plus me-2"></i>Añadir Nuevo Usuario</h2>
-                <p class="mb-0">Crea una nueva cuenta de usuario en el sistema. Hoy es <?php echo $fecha_actual; ?></p>
+                <h2><i class="fas fa-bus me-2"></i>Añadir Nueva Ruta de Autobús</h2>
+                <p class="mb-0">Crea una nueva ruta de autobús en el sistema. Hoy es <?php echo $fecha_actual; ?></p>
             </div>
             <div class="col-md-4 text-end">
-                <a href="admin_users.php" class="btn btn-outline-light"><i class="fas fa-arrow-left me-2"></i>Volver a Usuarios</a>
+                <a href="admin_rutas.php" class="btn btn-outline-light"><i class="fas fa-arrow-left me-2"></i>Volver</a>
             </div>
         </div>
     </div>
@@ -579,111 +596,135 @@ $fecha_actual = date('d-m-Y');
                 </div>
             <?php endif; ?>
 
-            <!-- Formulario de Añadir Usuario -->
+            <!-- Formulario de Añadir Ruta -->
             <div class="card animate-fade-in">
                 <div class="card-body">
-                    <h5 class="section-title">Datos del Usuario</h5>
+                    <h5 class="section-title">Información de la Ruta de Autobús</h5>
                     
-                    <form method="post" action="" id="addUserForm">
-                        <div class="row mb-4">
-                            <div class="col-md-4 mb-4 mb-md-0">
-                                <div class="card user-role-card <?php echo ($form_data['tipo'] == 'Administrador') ? 'active' : ''; ?>" data-role="Administrador" id="roleAdmin">
-                                    <div class="card-body text-center py-4">
-                                        <div class="user-role-icon role-admin">
-                                            <i class="fas fa-user-shield"></i>
+                    <form id="addRouteForm" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
+                        <!-- Tipo de Transporte (solo autobús) -->
+                        <div class="mb-4">
+                            <label class="form-label">Tipo de Transporte</label>
+                            <div class="row justify-content-center">
+                                <div class="col-md-6 col-lg-4">
+                                    <div class="transport-type-card active" data-type="Autobús">
+                                        <div class="transport-icon type-bus">
+                                            <i class="fas fa-bus"></i>
                                         </div>
-                                        <h5>Administrador</h5>
-                                        <p class="mb-0 text-muted">Control total del sistema</p>
+                                        <h6>Autobús</h6>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4 mb-4 mb-md-0">
-                                <div class="card user-role-card <?php echo ($form_data['tipo'] == 'Usuario') ? 'active' : ''; ?>" data-role="Usuario" id="roleUser">
-                                    <div class="card-body text-center py-4">
-                                        <div class="user-role-icon role-user">
-                                            <i class="fas fa-user"></i>
-                                        </div>
-                                        <h5>Usuario</h5>
-                                        <p class="mb-0 text-muted">Acceso estándar</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="card user-role-card <?php echo ($form_data['tipo'] == 'Soporte') ? 'active' : ''; ?>" data-role="Soporte" id="roleSupport">
-                                    <div class="card-body text-center py-4">
-                                        <div class="user-role-icon role-support">
-                                            <i class="fas fa-headset"></i>
-                                        </div>
-                                        <h5>Soporte</h5>
-                                        <p class="mb-0 text-muted">Atención de incidencias</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Campo oculto para almacenar el tipo de usuario -->
-                            <input type="hidden" name="tipo" id="userRole" value="<?php echo htmlspecialchars($form_data['tipo']); ?>">
+                            <!-- Campo oculto para almacenar el tipo de transporte -->
+                            <input type="hidden" name="tipo" id="transportType" value="Autobús">
                         </div>
                         
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
-                                <label for="nombre" class="form-label">Nombre Completo</label>
+                                <label for="nombre" class="form-label">Nombre de la Ruta</label>
                                 <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    <span class="input-group-text"><i class="fas fa-map-signs"></i></span>
                                     <input type="text" class="form-control" id="nombre" name="nombre" 
-                                           placeholder="Ingrese nombre completo" 
+                                           placeholder="Ej: Línea 1, Ruta Norte-Sur..." 
                                            value="<?php echo htmlspecialchars($form_data['nombre']); ?>" required>
                                 </div>
-                                <div class="form-text">Ingrese nombre y apellidos del usuario</div>
+                                <div class="form-text">Ingrese un nombre único e identificativo para la ruta</div>
                             </div>
                             <div class="col-md-6">
-                                <label for="correo" class="form-label">Correo Electrónico</label>
+                                <label for="tipo" class="form-label">Tipo de Ruta</label>
                                 <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                                    <input type="email" class="form-control" id="correo" name="correo" 
-                                           placeholder="Ingrese correo electrónico" 
-                                           value="<?php echo htmlspecialchars($form_data['correo']); ?>" required>
+                                    <span class="input-group-text"><i class="fas fa-bus"></i></span>
+                                    <input type="text" class="form-control" id="tipo" name="tipo" 
+                                           value="Autobús" readonly>
                                 </div>
-                                <div class="form-text">Será usado como identificador para iniciar sesión</div>
+                                <div class="form-text">Tipo de transporte fijo para esta ruta</div>
                             </div>
                         </div>
                         
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
-                                <label for="password" class="form-label">Contraseña</label>
+                                <label for="origen" class="form-label">Origen</label>
                                 <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                    <input type="password" class="form-control" id="password" name="password" 
-                                           placeholder="Ingrese contraseña" required>
-                                    <button class="btn btn-outline-secondary" type="button" id="togglePassword">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
+                                    <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                                    <input type="text" class="form-control" id="origen" name="origen" 
+                                           placeholder="Punto de inicio" 
+                                           value="<?php echo htmlspecialchars($form_data['origen']); ?>" required>
                                 </div>
-                                <div class="password-strength-meter mt-2">
-                                    <div class="password-strength-meter-fill" id="passwordStrength"></div>
-                                </div>
-                                <div id="passwordFeedback" class="form-text">La contraseña debe tener al menos 6 caracteres</div>
+                                <div class="form-text">Lugar donde comienza la ruta</div>
                             </div>
                             <div class="col-md-6">
-                                <label for="password_confirm" class="form-label">Confirmar Contraseña</label>
+                                <label for="destino" class="form-label">Destino</label>
                                 <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                    <input type="password" class="form-control" id="password_confirm" name="password_confirm" 
-                                           placeholder="Confirme contraseña" required>
-                                    <button class="btn btn-outline-secondary" type="button" id="togglePasswordConfirm">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
+                                    <span class="input-group-text"><i class="fas fa-map-pin"></i></span>
+                                    <input type="text" class="form-control" id="destino" name="destino" 
+                                           placeholder="Punto final" 
+                                           value="<?php echo htmlspecialchars($form_data['destino']); ?>" required>
                                 </div>
-                                <div id="passwordMatch" class="form-text">Las contraseñas deben coincidir</div>
+                                <div class="form-text">Lugar donde finaliza la ruta</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label for="horario_inicio" class="form-label">Horario de Inicio</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-clock"></i></span>
+                                    <input type="time" class="form-control" id="horario_inicio" name="horario_inicio" 
+                                           value="06:00" required>
+                                </div>
+                                <div class="form-text">Hora de inicio del servicio (formato 24h)</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="horario_fin" class="form-label">Horario de Fin</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-clock"></i></span>
+                                    <input type="time" class="form-control" id="horario_fin" name="horario_fin" 
+                                           value="22:00" required>
+                                </div>
+                                <div class="form-text">Hora de finalización del servicio (formato 24h)</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="frecuencia" class="form-label">Frecuencia (minutos)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-stopwatch"></i></span>
+                                    <input type="number" class="form-control" id="frecuencia" name="frecuencia" min="1" max="180"
+                                           value="30" required>
+                                    <span class="input-group-text">min</span>
+                                </div>
+                                <div class="form-text">Intervalo de tiempo entre cada servicio</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="descripcion" class="form-label">Descripción</label>
+                            <textarea class="form-control" id="descripcion" name="descripcion" rows="4" 
+                                     placeholder="Descripción detallada de la ruta, paradas importantes, etc."><?php echo htmlspecialchars($form_data['descripcion']); ?></textarea>
+                            <div class="form-text">Incluya información relevante como paradas principales o conexiones con otras rutas</div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6><i class="fas fa-info-circle me-2 text-primary"></i>Información Importante</h6>
+                                        <ul class="mb-0">
+                                            <li>Las rutas creadas serán visibles inmediatamente para los usuarios si están en estado "Activa".</li>
+                                            <li>Puede modificar la información de la ruta posteriormente desde el panel de gestión.</li>
+                                            <li>Para añadir paradas específicas, utilice la sección de "Gestión de Paradas" después de crear la ruta.</li>
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
                         <hr class="my-4">
                         
                         <div class="d-flex justify-content-between">
-                            <a href="admin_users.php" class="btn btn-outline-secondary">
+                            <a href="admin_rutas.php" class="btn btn-outline-secondary">
                                 <i class="fas fa-times me-2"></i>Cancelar
                             </a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-user-plus me-2"></i>Crear Usuario
+                                <i class="fas fa-bus me-2"></i>Crear Ruta de Autobús
                             </button>
                         </div>
                     </form>
@@ -745,85 +786,49 @@ $fecha_actual = date('d-m-Y');
             }, index * 100);
         });
         
-        // Selección de rol de usuario
-        const roleCards = document.querySelectorAll('.user-role-card');
-        const hiddenRoleInput = document.getElementById('userRole');
-        
-        roleCards.forEach(card => {
-            card.addEventListener('click', function() {
-                // Quitar clase active de todas las tarjetas
-                roleCards.forEach(c => c.classList.remove('active'));
-                // Añadir clase active a la tarjeta seleccionada
-                this.classList.add('active');
-                // Actualizar el valor del campo
-                hiddenRoleInput.value = this.getAttribute('data-role');
-            });
-        });
-
-        // Función para mostrar/ocultar contraseña
-        const togglePassword = document.getElementById('togglePassword');
-        const togglePasswordConfirm = document.getElementById('togglePasswordConfirm');
-        const passwordInput = document.getElementById('password');
-        const passwordConfirmInput = document.getElementById('password_confirm');
-        
-        togglePassword.addEventListener('click', function() {
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            this.querySelector('i').classList.toggle('fa-eye');
-            this.querySelector('i').classList.toggle('fa-eye-slash');
-        });
-        
-        togglePasswordConfirm.addEventListener('click', function() {
-            const type = passwordConfirmInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordConfirmInput.setAttribute('type', type);
-            this.querySelector('i').classList.toggle('fa-eye');
-            this.querySelector('i').classList.toggle('fa-eye-slash');
-        });
-
-        // Función para mostrar la fortaleza de la contraseña
-        const passwordStrengthMeter = document.getElementById('passwordStrength');
-        const passwordFeedback = document.getElementById('passwordFeedback');
-
-        // Validar coincidencia de contraseñas
-        const passwordMatchFeedback = document.getElementById('passwordMatch');
-
-        passwordConfirmInput.addEventListener('input', function() {
-            if (this.value === '') {
-                passwordMatchFeedback.style.color = '';
-                passwordMatchFeedback.textContent = 'Las contraseñas deben coincidir';
-            } else if (this.value !== passwordInput.value) {
-                passwordMatchFeedback.style.color = 'var(--danger-color)';
-                passwordMatchFeedback.textContent = 'Las contraseñas no coinciden';
-            } else {
-                passwordMatchFeedback.style.color = 'var(--success-color)';
-                passwordMatchFeedback.textContent = 'Las contraseñas coinciden';
-            }
-        });
-        
         // Validación del formulario antes de enviar
-        const addUserForm = document.getElementById('addUserForm');
-        addUserForm.addEventListener('submit', function(event) {
+        const addRouteForm = document.getElementById('addRouteForm');
+        addRouteForm.addEventListener('submit', function(event) {
             let hasErrors = false;
             
-            // Validar longitud del nombre
-            if (document.getElementById('nombre').value.length < 3) {
+            // Validar nombre de la ruta
+            if (document.getElementById('nombre').value.length < 2) {
                 hasErrors = true;
+                alert('El nombre de la ruta debe tener al menos 2 caracteres.');
             }
             
-            // Validar correo electrónico
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(document.getElementById('correo').value)) {
+            // Validar origen y destino
+            if (document.getElementById('origen').value === '') {
                 hasErrors = true;
+                alert('El origen es obligatorio.');
             }
             
-            // Validar contraseña
-            if (document.getElementById('password').value.length < 6) {
+            if (document.getElementById('destino').value === '') {
                 hasErrors = true;
+                alert('El destino es obligatorio.');
             }
             
-            // Validar coincidencia de contraseñas
-            if (document.getElementById('password').value !== document.getElementById('password_confirm').value) {
+            // Validar que origen y destino sean diferentes
+            if (document.getElementById('origen').value === document.getElementById('destino').value 
+                && document.getElementById('origen').value !== '') {
                 hasErrors = true;
+                alert('El origen y el destino no pueden ser iguales.');
+            }
+            
+            // Validar horarios
+            const horarioInicio = document.getElementById('horario_inicio').value;
+            const horarioFin = document.getElementById('horario_fin').value;
+            
+            if (horarioInicio === '' || horarioFin === '') {
+                hasErrors = true;
+                alert('Los horarios de inicio y fin son obligatorios.');
+            }
+            
+            // Validar frecuencia
+            const frecuencia = document.getElementById('frecuencia').value;
+            if (frecuencia === '' || frecuencia < 1 || frecuencia > 180) {
+                hasErrors = true;
+                alert('La frecuencia debe ser un número entre 1 y 180 minutos.');
             }
             
             // Si hay errores, detener el envío del formulario
