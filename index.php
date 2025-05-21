@@ -779,7 +779,7 @@
                             <a class="nav-link" href="php/altaLogin.php"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</a>
                         </li>
                         <li class="nav-item">
-                            <a class="btn btn-light rounded-pill ms-2" href="php/altaLogin.php?register=true">Registrarse</a>
+                            <a class="btn btn-light rounded-pill ms-2" href="php/register.php?register=true">Registrarse</a>
                         </li>
                     </ul>
                 </div>
@@ -1115,7 +1115,7 @@
                     <h2>¡Únete a MoveSync hoy!</h2>
                     <p>Descubre cómo podemos hacer que tus viajes diarios sean más fáciles, previsibles y eficientes. Regístrate ahora y comienza a disfrutar de todos nuestros beneficios.</p>
                     <div class="d-flex justify-content-center gap-3 flex-wrap">
-                        <a href="php/altaLogin.php?register=true" class="btn btn-light btn-lg">
+                        <a href="php/register.php?register=true" class="btn btn-light btn-lg">
                             <i class="fas fa-user-plus me-2"></i> Registrarse
                         </a>
                         <a href="php/altaLogin.php" class="btn btn-outline-light btn-lg">
