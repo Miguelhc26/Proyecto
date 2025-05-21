@@ -1,4 +1,7 @@
 <?php
+// Iniciar buffer de salida para evitar problemas con headers
+ob_start();
+
 session_start();
 
 // Conexión a la base de datos
@@ -49,14 +52,55 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $id_incidencia = $conn->insert_id;
             error_log("Incidencia creada correctamente. ID: $id_incidencia para usuario ID: $usuario_id");
             
-            // Redirigir con un mensaje de éxito
-            header("Location: report.php?message=Reporte enviado correctamente");
+            // Añadir puntos directamente sin incluir LoyaltyPoints.php
+            try {
+                // Añadir puntos en la tabla LoyaltyPoints
+                $pointsSql = "INSERT INTO LoyaltyPoints (id_usuario, total_points) 
+                              VALUES (?, 20) 
+                              ON DUPLICATE KEY UPDATE total_points = total_points + 20";
+                $pointsStmt = $conn->prepare($pointsSql);
+                
+                if (!$pointsStmt) {
+                    throw new Exception("Error preparando consulta de puntos: " . $conn->error);
+                }
+                
+                $pointsStmt->bind_param("i", $usuario_id);
+                $pointsSuccess = $pointsStmt->execute();
+                
+                if ($pointsSuccess) {
+                    // Registrar la transacción
+                    $transactionSql = "INSERT INTO LoyaltyTransactions 
+                                      (id_usuario, points, description, transaction_date) 
+                                      VALUES (?, 20, ?, NOW())";
+                    $transactionStmt = $conn->prepare($transactionSql);
+                    
+                    if (!$transactionStmt) {
+                        throw new Exception("Error preparando consulta de transacción: " . $conn->error);
+                    }
+                    
+                    $description = "Puntos por reportar incidencia: " . $categoria;
+                    $transactionStmt->bind_param("is", $usuario_id, $description);
+                    $transactionStmt->execute();
+                    
+                    error_log("Se añadieron 20 puntos al usuario ID: $usuario_id por reportar incidencia");
+                }
+                
+                // Redirigir con un mensaje de éxito que incluya los puntos obtenidos
+                header("Location: report.php?message=" . urlencode("Reporte enviado correctamente. ¡Has ganado 20 puntos de fidelización!") . "&type=success");
+                exit();
+            } catch (Exception $e) {
+                // Si hay un error al añadir puntos, aún reportamos el éxito del reporte
+                error_log("Error al añadir puntos: " . $e->getMessage());
+                header("Location: report.php?message=" . urlencode("Reporte enviado correctamente, pero hubo un problema al añadir los puntos.") . "&type=success");
+                exit();
+            }
         } else {
             // Registrar el error para depuración
             error_log("Error al insertar incidencia: " . $stmt->error);
             
             // Redirigir con un mensaje de error
-            header("Location: report.php?message=Error al enviar el reporte: " . $stmt->error . "&type=danger");
+            header("Location: report.php?message=" . urlencode("Error al enviar el reporte: " . $stmt->error) . "&type=danger");
+            exit();
         }
 
         // Cerrar la declaración
@@ -66,13 +110,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         error_log("Faltan campos requeridos: Ruta=$ruta, Categoria=$categoria, Fecha=$fecha, Usuario=$usuario_id");
         
         // Redirigir con un mensaje de error si faltan campos
-        header("Location: report.php?message=Por favor, completa todos los campos.&type=warning");
+        header("Location: report.php?message=" . urlencode("Por favor, completa todos los campos.") . "&type=warning");
+        exit();
     }
 } else {
     // Redirigir si no se accede mediante POST
     header("Location: report.php");
+    exit();
 }
 
 // Cerrar la conexión
 $conn->close();
-?>
+
+// Finalizar el buffer de salida
+ob_end_flush();

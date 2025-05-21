@@ -1,5 +1,8 @@
 <?php
-session_start();
+// Comprobar si la sesión ya está activa antes de iniciarla
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
 include_once(__DIR__ . '/../config/db_config.php');
 
 // Verificar si el usuario ha iniciado sesión
@@ -45,6 +48,9 @@ class LoyaltyPoints {
             return ["success" => false, "message" => "No tienes suficientes puntos para canjear esta recompensa."];
         }
 
+        // Generar código único para el viaje gratis
+        $voucherCode = strtoupper(substr(md5($this->id_usuario . time()), 0, 6));
+        
         // Actualizar los puntos en la base de datos
         $newPoints = $currentPoints - $points;
         $sql = "UPDATE LoyaltyPoints SET total_points = ? WHERE id_usuario = ?";
@@ -52,23 +58,33 @@ class LoyaltyPoints {
         $stmt->bind_param("ii", $newPoints, $this->id_usuario);
 
         if ($stmt->execute()) {
-            // Registrar la transacción
-            $this->logTransaction($points, "Canje: " . $description);
-            return ["success" => true, "message" => "¡Enhorabuena! Has canjeado exitosamente " . $points . " puntos por: " . $description];
+            // Registrar la transacción incluyendo el código del viaje gratis
+            $transactionDesc = "Canje: " . $description . " (Código: " . $voucherCode . ")";
+            $this->logTransaction($points, $transactionDesc);
+            
+            // Mensaje para el usuario con el código del viaje gratis
+            $message = "<strong>¡Enhorabuena!</strong> Has canjeado exitosamente " . $points . " puntos por: " . $description . 
+                       "<br><br><div class='alert alert-info'>Tu código de viaje gratis: <strong>" . $voucherCode . 
+                       "</strong><br>Muestra este código al conductor para disfrutar de tu viaje.</div>" .
+                       "<button onclick='window.print()' class='btn btn-sm btn-primary mt-2'>" .
+                       "<i class='fas fa-print me-2'></i>Imprimir resguardo</button>";
+            
+            return ["success" => true, "message" => $message];
         } else {
             return ["success" => false, "message" => "Error al canjear puntos: " . $this->conn->error];
         }
     }
 
     // Método para agregar puntos
-    public function addPoints($points) {
+    // Modificar este método en LoyaltyPoints.php
+    public function addPoints($points, $description = "Puntos añadidos") {
         $sql = "INSERT INTO LoyaltyPoints (id_usuario, total_points) VALUES (?, ?) ON DUPLICATE KEY UPDATE total_points = total_points + ?";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("iii", $this->id_usuario, $points, $points);
 
         if ($stmt->execute()) {
             if ($points > 0) {
-                $this->logTransaction($points, "Puntos añadidos");
+                $this->logTransaction($points, $description);
                 return ["success" => true, "message" => "Puntos añadidos exitosamente."];
             }
             return ["success" => true, "message" => ""];
@@ -149,7 +165,6 @@ $progressPercent = min(($currentPoints / $nextLevelPoints) * 100, 100);
 // Determinar nivel actual (ejemplo básico)
 $userLevel = floor($currentPoints / 100) + 1;
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -440,6 +455,22 @@ $userLevel = floor($currentPoints / 100) + 1;
             color: var(--danger-color);
             border-left: 4px solid var(--danger-color);
         }
+        
+        @media print {
+            .navbar, .btn, form, .points-summary, .col-lg-4, .row.mt-4, .mt-4 {
+                display: none !important;
+            }
+            h2, .col-lg-8, .section-title {
+                display: none !important;
+            }
+            .alert-info {
+                border: 2px dashed #3a7bd5;
+                padding: 20px;
+                margin: 20px auto;
+                max-width: 500px;
+                text-align: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -628,6 +659,8 @@ $userLevel = floor($currentPoints / 100) + 1;
         </a>
     </div>
 </div>
+
+
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>

@@ -1145,9 +1145,6 @@ try {
                         <li class="mb-2"><i class="fas fa-envelope me-2 text-success"></i>soporte@movesync.com</li>
                         <li><i class="fas fa-comment-dots me-2 text-success"></i>Chat en vivo (L-V: 9h-18h)</li>
                     </ul>
-                    <a href="contacto.php" class="btn btn-outline-primary w-100 mt-3">
-                        <i class="fas fa-paper-plane me-2"></i>Contactar soporte
-                    </a>
                 </div>
             </div>
 
@@ -1196,9 +1193,6 @@ try {
                         </div>
                     </div>
                 </div>
-                <div class="card-footer bg-white text-center">
-                    <a href="faq.php" class="btn btn-sm btn-outline-secondary">Ver todas las preguntas</a>
-                </div>
             </div>
         </div>
     </div>
@@ -1221,11 +1215,11 @@ try {
             <div class="col-md-4 mb-4 mb-md-0">
                 <h5>Enlaces Rápidos</h5>
                 <ul class="list-unstyled">
-                    <li><a href="php/routes.php"><i class="fas fa-angle-right me-2"></i>Rutas</a></li>
-                    <li><a href="php/LoyaltyPoints.php"><i class="fas fa-angle-right me-2"></i>Programa de Fidelización</a></li>
-                    <li><a href="php/help.php"><i class="fas fa-angle-right me-2"></i>Ayuda y Soporte</a></li>
-                    <li><a href="php/terms.php"><i class="fas fa-angle-right me-2"></i>Términos y Condiciones</a></li>
-                </ul>
+                        <li><a href="routes.php"><i class="fas fa-angle-right me-2"></i>Rutas</a></li>
+                        <li><a href="LoyaltyPoints.php"><i class="fas fa-angle-right me-2"></i>Programa de Fidelización</a></li>
+                        <li><a href="help.php"><i class="fas fa-angle-right me-2"></i>Ayuda y Soporte</a></li>
+                        <li><a href="terms.php"><i class="fas fa-angle-right me-2"></i>Términos y Condiciones</a></li>
+                    </ul>
             </div>
             <div class="col-md-4">
                 <h5>Contáctanos</h5>

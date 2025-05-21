@@ -9,29 +9,24 @@ if (!isset($_SESSION['usuario']) || !isset($_SESSION['admin'])) {
 
 include(__DIR__ . '/../config/db_config.php');
 
-// Contar usuarios registrados
 $sqlUsuarios = "SELECT COUNT(*) AS total FROM Usuarios";
 $resultUsuarios = $conn->query($sqlUsuarios);
 $totalUsuarios = $resultUsuarios->fetch_assoc()['total'];
 
-// Contar reportes de incidencias pendientes
 $sqlReportes = "SELECT COUNT(*) AS total FROM Incidencias WHERE estado='Pendiente'";
 $resultReportes = $conn->query($sqlReportes);
 $totalReportes = $resultReportes->fetch_assoc()['total'];
 
-// Contar reportes de incidencias resueltas
 $sqlReportesResueltos = "SELECT COUNT(*) AS total FROM Incidencias WHERE estado='Resuelto'";
 $resultReportesResueltos = $conn->query($sqlReportesResueltos);
 $totalReportesResueltos = $resultReportesResueltos->fetch_assoc()['total'];
 
-// Obtener las incidencias más recientes
 $sqlUltimasIncidencias = "SELECT i.ID_Incidencia, i.Descripcion, i.categoria, i.Estado, i.fecha, u.nombre 
                           FROM Incidencias i 
                           LEFT JOIN Usuarios u ON i.ID_Usuario = u.ID_Usuario
                           ORDER BY i.fecha DESC LIMIT 5";
 $resultUltimasIncidencias = $conn->query($sqlUltimasIncidencias);
 
-// Obtener estadísticas de categorías de incidencias
 $sqlCategorias = "SELECT categoria, COUNT(*) as total FROM Incidencias GROUP BY categoria";
 $resultCategorias = $conn->query($sqlCategorias);
 $categorias = [];
@@ -43,7 +38,6 @@ if ($resultCategorias) {
     }
 }
 
-// Obtener rutas más usadas
 $sqlRutas = "SELECT r.Nombre, COUNT(i.ID_Incidencia) as total_incidencias 
             FROM Rutas r 
             LEFT JOIN Incidencias i ON r.ID_Ruta = i.ID_Ruta 
@@ -61,7 +55,6 @@ $sqlUsuariosActivos = "SELECT u.nombre, COUNT(i.ID_Incidencia) as total_reportes
                       LIMIT 5";
 $resultUsuariosActivos = $conn->query($sqlUsuariosActivos);
 
-// Fecha actual
 $fecha_actual = date('d-m-Y');
 $ultima_conexion = date('d-m-Y H:i:s');
 ?>
@@ -197,7 +190,6 @@ $ultima_conexion = date('d-m-Y H:i:s');
             margin-left: 15px;
         }
 
-        /* Tablas */
         .table th {
             font-weight: 600;
             background-color: var(--gray-100);
@@ -445,7 +437,6 @@ $ultima_conexion = date('d-m-Y H:i:s');
             margin-bottom: 20px;
         }
 
-        /* Footer */
         footer {
             background-color: var(--dark-color);
             color: white;
@@ -521,7 +512,6 @@ $ultima_conexion = date('d-m-Y H:i:s');
 </head>
 <body>
 
-<!-- Header con Navegación -->
 <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="#">
@@ -560,13 +550,9 @@ $ultima_conexion = date('d-m-Y H:i:s');
                 <h2><i class="fas fa-user-shield me-2"></i>Panel de Administración</h2>
                 <p>Bienvenido al sistema de gestión de MoveSync. Hoy es <?php echo $fecha_actual; ?></p>
             </div>
-            <div class="col-md-3 text-end">
-                <button class="btn btn-light"><i class="fas fa-download me-2"></i>Descargar Informe</button>
-            </div>
         </div>
     </div>
 
-    <!-- Estadísticas Generales -->
     <div class="row mb-4">
         <div class="col-md-4 mb-4">
             <div class="card stat-card h-100">
@@ -600,7 +586,6 @@ $ultima_conexion = date('d-m-Y H:i:s');
         </div>
     </div>
 
-    <!-- Accesos Rápidos -->
     <h4 class="section-title"><i class="fas fa-bolt me-2"></i>Accesos Rápidos</h4>
     <div class="row g-4 mb-4">
         <div class="col-md-3 col-sm-6">
@@ -645,9 +630,7 @@ $ultima_conexion = date('d-m-Y H:i:s');
     </div>
     </div>
 
-    <!-- Sección de Datos y Gráficos -->
     <div class="row mb-4">
-        <!-- Gráfico de categorías -->
         <div class="col-lg-6 mb-4">
             <h4 class="section-title"><i class="fas fa-chart-pie me-2"></i>Estadísticas</h4>
             <div class="card">
@@ -660,7 +643,6 @@ $ultima_conexion = date('d-m-Y H:i:s');
             </div>
         </div>
         
-        <!-- Tabla de rutas más usadas -->
         <div class="col-lg-6 mb-4">
             <h4 class="section-title"><i class="fas fa-route me-2"></i>Rutas Principales</h4>
             <div class="card">
@@ -700,9 +682,7 @@ $ultima_conexion = date('d-m-Y H:i:s');
         </div>
     </div>
 
-    <!-- Últimas Incidencias y Usuarios Activos -->
     <div class="row">
-        <!-- Tabla de incidencias recientes -->
         <div class="col-lg-8 mb-4">
             <h4 class="section-title"><i class="fas fa-flag me-2"></i>Incidencias Recientes</h4>
             <div class="card">
@@ -717,7 +697,6 @@ $ultima_conexion = date('d-m-Y H:i:s');
                                     <th>USUARIO</th>
                                     <th>ESTADO</th>
                                     <th>FECHA</th>
-                                    <th>ACCIONES</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -748,11 +727,6 @@ $ultima_conexion = date('d-m-Y H:i:s');
                                                 </span>
                                             </td>
                                             <td><?php echo htmlspecialchars($incidencia['fecha']); ?></td>
-                                            <td>
-                                                <a href="admin_incidencia_detail.php?id=<?php echo $incidencia['ID_Incidencia']; ?>" class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                            </td>
                                         </tr>
                                     <?php endwhile; ?>
                                 <?php else: ?>
@@ -770,7 +744,6 @@ $ultima_conexion = date('d-m-Y H:i:s');
             </div>
         </div>
 
-        <!-- Usuarios más activos -->
         <div class="col-lg-4 mb-4">
                             <h4 class="section-title"><i class="fas fa-users me-2"></i>Usuarios Activos</h4>
             <div class="card">
@@ -782,7 +755,6 @@ $ultima_conexion = date('d-m-Y H:i:s');
                                 <tr>
                                     <th>USUARIO</th>
                                     <th>REPORTES</th>
-                                    <th>ACCIÓN</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -796,11 +768,6 @@ $ultima_conexion = date('d-m-Y H:i:s');
                                                 </div>
                                             </td>
                                             <td><?php echo $usuario['total_reportes']; ?></td>
-                                            <td>
-                                                <a href="admin_user_detail.php?id=<?php echo $usuario['ID_Usuario'] ?? ''; ?>" class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                            </td>
                                         </tr>
                                     <?php endwhile; ?>
                                 <?php else: ?>
@@ -820,7 +787,7 @@ $ultima_conexion = date('d-m-Y H:i:s');
     </div>
 </div>
 
-<!-- Footer -->
+
 <footer class="bg-dark text-white">
     <div class="container">
         <div class="row">
@@ -860,11 +827,10 @@ $ultima_conexion = date('d-m-Y H:i:s');
     </div>
 </footer>
 
-<!-- Scripts -->
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Gráfico de categorías
     const categoriaCtx = document.getElementById('categoriaChart').getContext('2d');
     const categoriaChart = new Chart(categoriaCtx, {
         type: 'doughnut',
@@ -921,7 +887,6 @@ $ultima_conexion = date('d-m-Y H:i:s');
         }
     });
 
-    // Animación de elementos al cargar la página
     document.addEventListener('DOMContentLoaded', function() {
         const elements = document.querySelectorAll('.card, .section-title, .admin-welcome');
         elements.forEach((el, index) => {

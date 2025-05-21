@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <?php
+<?php
 $usuario = $usuario ?? ['nombre' => 'Usuario'];
 $ultima_conexion = $ultima_conexion ?? 'Desconocida';
 $nivel = $nivel ?? 1;

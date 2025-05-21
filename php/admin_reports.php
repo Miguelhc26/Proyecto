@@ -409,19 +409,19 @@ $fecha_actual = date('d-m-Y');
             background-color: var(--info-color);
         }
 
-        .category-traffic {
+        .category-trafico {
             background-color: #FF5722;
         }
 
-        .category-vehicle {
+        .category-vehiculo {
             background-color: #009688;
         }
 
-        .category-service {
+        .category-servicio {
             background-color: #673AB7;
         }
 
-        .category-other {
+        .category-otro {
             background-color: #607D8B;
         }
 
@@ -459,6 +459,48 @@ $fecha_actual = date('d-m-Y');
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+        }
+
+        /* Timeline para actividad reciente */
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-bottom: 20px;
+        }
+        
+        .timeline-item:last-child {
+            padding-bottom: 0;
+        }
+        
+        .timeline-marker {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            left: -30px;
+            top: 5px;
+        }
+        
+        .timeline-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: -24px;
+            top: 17px;
+            height: calc(100% - 12px);
+            width: 1px;
+            background-color: var(--gray-300);
+        }
+        
+        .timeline-content {
+            background-color: var(--gray-100);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
         /* Footer */
@@ -546,7 +588,7 @@ $fecha_actual = date('d-m-Y');
                     <a class="nav-link" href="admin_users.php"><i class="fas fa-users"></i> Usuarios</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" href="admin_reportes.php"><i class="fas fa-flag"></i> Incidencias</a>
+                    <a class="nav-link active" href="admin_reports.php"><i class="fas fa-flag"></i> Incidencias</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="admin_settings.php"><i class="fas fa-cog"></i> Configuración</a>
@@ -746,11 +788,11 @@ $fecha_actual = date('d-m-Y');
                                             <td><?php echo date('d/m/Y H:i', strtotime($row['fecha'])); ?></td>
                                             <td class="text-center">
                                                 <div class="btn-group">
-                                                        <?php if ($row['Estado'] == 'Pendiente'): ?>
-                                                        <a href="admin_resolve_report.php?id=<?php echo $row['ID_Incidencia']; ?>" 
-                                                        class="btn btn-sm btn-success" title="Resolver">
-                                                        <i class="fas fa-check"></i>
-                                                        </a>
+                                                    <?php if ($row['Estado'] == 'Pendiente'): ?>
+                                                    <a href="./admin_resolve_report.php?id=<?php echo $row['ID_Incidencia']; ?>" 
+                                                    class="btn btn-sm btn-success" title="Resolver">
+                                                    <i class="fas fa-check"></i>
+                                                    </a>
                                                     <?php endif; ?>
                                                 </div>
                                             </td>
@@ -815,7 +857,7 @@ $fecha_actual = date('d-m-Y');
                             <?php if (!empty($search)): ?>
                                 con los criterios de búsqueda proporcionados.
                                 <div class="mt-3">
-                                    <a href="admin_reportes.php" class="btn btn-sm btn-outline-primary">Ver todas las incidencias</a>
+                                    <a href="admin_reports.php" class="btn btn-sm btn-outline-primary">Ver todas las incidencias</a>
                                 </div>
                             <?php else: ?>
                                 registradas en el sistema.
@@ -825,6 +867,39 @@ $fecha_actual = date('d-m-Y');
                             <?php endif; ?>
                         </div>
                     <?php endif; ?>
+                </div>
+            </div>
+            
+            <!-- Tarjeta de Actividad Reciente -->
+            <div class="card animate-fade-in">
+                <div class="card-body">
+                    <h5 class="card-title mb-3"><i class="fas fa-history me-2"></i>Actividad Reciente</h5>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-0">Incidencia #1245 Resuelta</h6>
+                                <small class="text-muted">Hoy a las 10:30</small>
+                                <p class="mb-0 mt-1">Problema de retraso en la Línea Expreso resuelto</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-warning"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-0">Nueva Incidencia Reportada</h6>
+                                <small class="text-muted">Hoy a las 9:15</small>
+                                <p class="mb-0 mt-1">Interrupción de servicio en la Ruta Norte</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-primary"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-0">Actualización del Sistema</h6>
+                                <small class="text-muted">Ayer a las 15:45</small>
+                                <p class="mb-0 mt-1">Sistema de seguimiento de incidencias actualizado a la versión 2.3</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -850,7 +925,7 @@ $fecha_actual = date('d-m-Y');
                 <ul class="list-unstyled">
                     <li><a href="admin_dashboard.php"><i class="fas fa-angle-right me-2"></i>Panel de Control</a></li>
                     <li><a href="admin_users.php"><i class="fas fa-angle-right me-2"></i>Gestión de Usuarios</a></li>
-                    <li><a href="admin_reportes.php"><i class="fas fa-angle-right me-2"></i>Gestión de Incidencias</a></li>
+                    <li><a href="admin_reports.php"><i class="fas fa-angle-right me-2"></i>Gestión de Incidencias</a></li>
                     <li><a href="admin_rutas.php"><i class="fas fa-angle-right me-2"></i>Gestión de Rutas</a></li>
                     <li><a href="admin_settings.php"><i class="fas fa-angle-right me-2"></i>Configuración</a></li>
                 </ul>
@@ -881,6 +956,38 @@ $fecha_actual = date('d-m-Y');
             setTimeout(() => {
                 el.classList.add('animate-fade-in');
             }, index * 100);
+        });
+        
+        // Funcionalidad para texto truncado al pasar el ratón
+        const descriptionCells = document.querySelectorAll('.description-cell');
+        descriptionCells.forEach(cell => {
+            cell.addEventListener('mouseenter', function() {
+                if (this.offsetWidth < this.scrollWidth) {
+                    this.style.whiteSpace = 'normal';
+                    this.style.overflow = 'visible';
+                    this.style.maxWidth = '400px';
+                    this.style.position = 'relative';
+                    this.style.zIndex = '10';
+                    this.style.backgroundColor = '#fff';
+                    this.style.boxShadow = '0 5px 15px rgba(0,0,0,0.1)';
+                    this.style.padding = '10px';
+                    this.style.borderRadius = '6px';
+                    this.style.transition = 'all 0.3s ease';
+                }
+            });
+            
+            cell.addEventListener('mouseleave', function() {
+                this.style.whiteSpace = 'nowrap';
+                this.style.overflow = 'hidden';
+                this.style.textOverflow = 'ellipsis';
+                this.style.maxWidth = '300px';
+                this.style.position = 'static';
+                this.style.zIndex = 'auto';
+                this.style.backgroundColor = 'transparent';
+                this.style.boxShadow = 'none';
+                this.style.padding = '12px 16px';
+                this.style.borderRadius = '0';
+            });
         });
     });
 </script>

@@ -736,7 +736,7 @@ $rutas = [
         <!-- Botón de volver -->
         <div class="text-center">
             <a href="../dashboard.php" class="btn btn-back">
-                <i class="fas fa-arrow-left me-2"></i>Volver al Dashboard
+                <i class="fas fa-arrow-left me-2"></i>Volver
             </a>
         </div>
     </div>
@@ -750,7 +750,7 @@ $rutas = [
                     <p>Plataforma líder en gestión de rutas e incidencias de transporte, ayudando a miles de usuarios diariamente a mejorar su experiencia de viaje.</p>
                     <div class="social-icons mt-3">
                         <a href="#"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a> 
                         <a href="#"><i class="fab fa-instagram"></i></a>
                         <a href="#"><i class="fab fa-linkedin-in"></i></a>
                     </div>
@@ -758,7 +758,6 @@ $rutas = [
                 <div class="col-md-4 mb-4 mb-md-0">
                     <h5>Enlaces Rápidos</h5>
                     <ul class="list-unstyled">
-                        <li><a href="routes.php"><i class="fas fa-angle-right me-2"></i>Rutas</a></li>
                         <li><a href="report.php"><i class="fas fa-angle-right me-2"></i>Reportar Incidencia</a></li>
                         <li><a href="LoyaltyPoints.php"><i class="fas fa-angle-right me-2"></i>Programa de Fidelización</a></li>
                         <li><a href="help.php"><i class="fas fa-angle-right me-2"></i>Ayuda y Soporte</a></li>
