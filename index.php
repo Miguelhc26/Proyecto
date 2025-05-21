@@ -770,7 +770,7 @@
                             <a class="nav-link" href="#features"><i class="fas fa-star"></i> Características</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#testimonials"><i class="fas fa-comment"></i> Testimonios</a>
+                            <a class="nav-link" href="#solutions"><i class="fas fa-comment"></i> Soluciones</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="#contact"><i class="fas fa-envelope"></i> Contacto</a>
@@ -1145,7 +1145,7 @@
                 <ul class="list-unstyled">
                     <li><a href="index.php"><i class="fas fa-angle-right me-2"></i>Inicio</a></li>
                     <li><a href="#features"><i class="fas fa-angle-right me-2"></i>Características</a></li>
-                    <li><a href="#testimonials"><i class="fas fa-angle-right me-2"></i>Testimonios</a></li>
+                    <li><a href="#solutions"><i class="fas fa-angle-right me-2"></i>Soluciones</a></li>
                     <li><a href="php/faq.php"><i class="fas fa-angle-right me-2"></i>Preguntas frecuentes</a></li>
                     <li><a href="php/about.php"><i class="fas fa-angle-right me-2"></i>Sobre nosotros</a></li>
                 </ul>
